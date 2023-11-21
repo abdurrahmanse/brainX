@@ -655,12 +655,12 @@ a {
 
 /* Navigation Bar */
 .nav {
+  align-items: center;
   background: #000;
   display: flex;
-  justify-content: space-between;
   flex-wrap: wrap;
+  justify-content: space-between;
   padding: 1rem;
-  align-items: center;
 }
 
 .nav__list {
@@ -693,9 +693,9 @@ a {
 }
 
 .nav.collapsible--expanded .nav__toggler {
-  opacity: 1;
-  box-shadow: 0 0 0 3px #666;
   border-radius: 5px;
+  box-shadow: 0 0 0 3px #666;
+  opacity: 1;
 }
 
 .nav__brand {
@@ -745,8 +745,8 @@ a {
 
 /* Domain Block */
 .block-domain .input-group {
-  box-shadow: 0 0 30px 20px #e6ebee;
   border: 0;
+  box-shadow: 0 0 30px 20px #e6ebee;
   margin: 4rem auto;
   max-width: 670px;
 }
@@ -754,13 +754,13 @@ a {
 .block-domain__prices {
   color: var(--color-headings);
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 6rem);
   font-size: 2rem;
   font-weight: 600;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 6rem);
   justify-items: center;
-  max-width: 700px;
   margin: 0 auto;
+  max-width: 700px;
 }
 
 @media screen and (min-width: 768px) {
@@ -840,10 +840,10 @@ a {
 }
 
 .footer__heading {
-  text-transform: uppercase;
-  font-weight: 600;
   font-size: 2.5rem;
+  font-weight: 600;
   line-height: 1.5;
+  text-transform: uppercase;
 }
 
 .footer__brand {
