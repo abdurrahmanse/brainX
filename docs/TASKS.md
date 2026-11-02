@@ -25,8 +25,9 @@ Files marked with `*` already exist and get changed.
 | P1-T4 | Remove unused starter parts, with owner approval | `apps/admin`, `packages/ui`, starter READMEs, `apps/web`*, `pnpm-lock.yaml`*, empty `models/` | Build still passes without them |
 | P1-T5 | Clean up git ignores | `.gitignore`*, `.DS_Store`, `.turbo/preferences/tui.json`, `package.json`* | `model/data`, `model/checkpoints`, `model/outputs`, and other generated or private files are ignored |
 | P1-T6 | Set up the Python workspace | `pyproject.toml`, `.python-version`, `uv.lock`, `pnpm-workspace.yaml`*, `model/package.json`, `model/pyproject.toml`*, `model/src/__init__.py`, `model/tests/test_setup.py`, `turbo.json`*, `package.json`* | One command runs the sample pytest test |
+| P1-T7 | Add GitHub Actions quality baseline | `.github/workflows/ci.yml`, `docs/QUALITY.md`* | A clean GitHub runner performs the existing safe Node checks without training, deployment, or private data |
 
-### Details for P1-T3 to P1-T6
+### Details for P1-T3 to P1-T7
 
 P1-T1 and P1-T2 are done (see [PROGRESS.md](PROGRESS.md)). Commands run from the repo root. Settings marked "tested" passed in a temporary folder on 2026-11-02, not in the real repo; each task must confirm them here.
 
@@ -103,6 +104,17 @@ P1-T1 and P1-T2 are done (see [PROGRESS.md](PROGRESS.md)). Commands run from the
 - **Acceptance:** All four Verify commands pass. `uv.lock` exists. The model package is named exactly `brainx-model`. No dependency other than `pytest` was added.
 - **Verify:** `uv sync --all-packages`, `uv run --package brainx-model pytest model/tests`, `pnpm test`, `uv run --package brainx-model python -c "import src; print(src.__file__)"`
 - **Learning:** What a uv workspace is, why a `package.json` wrapper lets Turborepo run Python tasks, and what `uv.lock` pins.
+
+#### P1-T7: Add GitHub Actions quality baseline
+
+- **Objective:** Run the project's safe quality checks automatically on GitHub for every push and pull request.
+- **Prerequisites:** P1-T6.
+- **Files:** `.github/workflows/ci.yml`, `docs/QUALITY.md`*.
+- **Packages:** None.
+- **Steps:** Add a workflow that checks out the repository, installs the pinned Node dependencies from the lockfile, and runs the existing `lint`, `check-types`, and `build` scripts. Add Python setup checks only after their lockfile exists. Use cache keys from lockfiles; do not cache, download, upload, or train model data/checkpoints. The workflow must not deploy, access production secrets, or run a task expected to take over 10 minutes.
+- **Acceptance:** The workflow YAML is valid, uses pinned setup actions or documented version pins, and the initial Node job completes from a clean GitHub runner. Its status is visible on the commit or pull request.
+- **Verify:** Trigger the workflow on a branch or pull request and inspect its actual logs. Locally, run `pnpm lint`, `pnpm check-types`, and `pnpm build` to compare the commands.
+- **Learning:** Why CI repeats checks in a fresh environment and why training/deployment must not hide inside it.
 
 ## Phase 2: Model Preparation
 

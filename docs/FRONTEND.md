@@ -4,6 +4,8 @@ This is the plan for `apps/web`. The visual rules are in [DESIGN.md](DESIGN.md),
 
 Phase 6 starts only after the model milestone and Phase 5, so the UI connects to a real backend.
 
+The visual contract belongs to [DESIGN.md](DESIGN.md). The quality and performance plan belongs to [QUALITY.md](QUALITY.md); this file maps those rules to the web application's implementation tasks.
+
 ## Packages
 
 Versions were checked on 2026-11-02.
@@ -123,6 +125,19 @@ If `localStorage` is blocked or full, chat must keep working with default settin
 - Highlight code only when the reply is finished, because highlighting is slow to re-run.
 - Load Shiki only when a code block first appears, with a small set of languages, so the first page stays light. Before highlighting finishes, show plain code.
 - Everything is bundled, so highlighting works offline.
+
+## Frontend quality and performance
+
+| Concern | Implementation rule | Evidence task |
+|---|---|---|
+| Bundle cost | Keep shared components small; dynamic-load Shiki; do not add a package for a single CSS effect | P6-T9, P6-T16 |
+| Streaming smoothness | Batch visible deltas on a short timer; keep scroll stable; stop updates after cancellation | P6-T11 |
+| Rendering safety | Markdown has no raw HTML; links stay inert; code is text until safely highlighted | P6-T8, P6-T9 |
+| Account privacy | Credentialed requests use the configured API only; browser storage never holds a password or session token | P6-T4A, P7-T4 |
+| Accessibility | Every interaction works by keyboard and has labelled controls/focus state | P6-T3, P6-T14, P6-T15 |
+| Browser performance | Measure real page load, interaction, and layout-shift behaviour after the feature set exists | P6-T16 |
+
+No frontend speed number is a requirement until a real browser baseline exists. P6-T16 records the device, browser, network condition, measurement tool, and output before proposing a budget.
 
 ## Keyboard shortcuts
 

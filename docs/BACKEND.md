@@ -362,6 +362,18 @@ During streaming, a failure sends an `error` event with `generation_failed` or `
 | Integration | The real model path | A small test checkpoint, using a real server for disconnects |
 | Boundaries | Import rules | A small import-checking test |
 
+## Backend performance and reliability
+
+| Concern | Baseline design | Measured in |
+|---|---|---|
+| Model memory | Load one model once; one generation lock prevents duplicate copies | P5-T10, P5-T18 |
+| Streaming latency | Generate in a worker thread and forward chunks over SSE without holding a database connection | P5-T11, P5-T18 |
+| Database work | Async pool, short transactions, ownership-scoped pagination, and indexes | P5-T4 through P5-T9 |
+| Failure recovery | Stop event, generation timeout, partial-reply state, graceful shutdown | P5-T12, P5-T14, P5-T16 |
+| Public capacity | Input limits, account/session checks, one active generation, and request limits | P5-T6A, P5-T16, P8-T6 |
+
+P5-T18 records time to first token, generated tokens/second, memory, request duration, and busy/error counts. It does not promise a target before the real model and host exist. More workers, a queue, cache, Redis, or a separate inference service are considered only when those measurements show a bottleneck. See [QUALITY.md](QUALITY.md#performance-evidence).
+
 Tests use PostgreSQL, not SQLite, so constraints behave the same as in the real system. The model is faked only where the test is about the API.
 
 ## Security and observability

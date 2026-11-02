@@ -254,6 +254,21 @@ for text in engine.stream(messages, settings, stop_event):
 
 **Quantization:** not planned. Only consider it if P4-T6 shows a real speed or memory problem.
 
+## Performance and acceleration policy
+
+The first implementation is deliberately the simplest correct baseline: float32, one device at a time, deterministic settings where possible, and real metrics written to a run folder. An accelerator is adopted only if the same model, data slice, seed, and generation settings show a useful improvement without changing correctness.
+
+| Candidate | When it may be tested | Keep it only when |
+|---|---|---|
+| MPS | P2-T1 confirms it is available; P3-T6 uses it for the smoke test | It trains correctly and its real memory/speed evidence is recorded |
+| `torch.autocast` | P3-T6 after float32 baseline | It improves measured speed or memory without unstable loss; the earlier short random-data check did not show a clear gain |
+| `torch.compile` | P3-T6 or P4-T6, after the plain model passes | Compile overhead and steady-state speed are both measured on this Mac; it may be rejected if MPS support is not beneficial |
+| Larger batch / gradient accumulation | P3-T6 when memory allows | It improves useful tokens/second without out-of-memory errors or quality regression |
+| CPU versus MPS serving | P4-T6 with real exported weights | The chosen device has better measured time-to-first-token, tokens/second, and memory behaviour |
+| Quantization | P4-T6 only if deployment memory or speed is a real blocker | Output quality and stopping remain correct and the deployment measurement improves |
+
+Pre-tokenized binary files, a fixed tokenizer, bounded context/output lengths, streaming generation, checkpoint resume, and one loaded inference engine are baseline performance design—not optional polish. The full cross-layer measurement plan is in [QUALITY.md](QUALITY.md#performance-evidence).
+
 ## Limits
 
 The model can invent facts confidently, forget long conversations, and repeat problems from its data. It has no safety training. The UI states that its answers can be wrong.

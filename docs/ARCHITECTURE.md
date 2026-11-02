@@ -1,6 +1,6 @@
 # brainX: Architecture
 
-This is the planned system overview. Details are in [MODEL.md](MODEL.md), [BACKEND.md](BACKEND.md), and [FRONTEND.md](FRONTEND.md).
+This is the planned system overview. Details are in [MODEL.md](MODEL.md), [BACKEND.md](BACKEND.md), [FRONTEND.md](FRONTEND.md), [DESIGN.md](DESIGN.md), and [QUALITY.md](QUALITY.md).
 
 ## Overview
 
@@ -16,6 +16,44 @@ flowchart LR
 - **Monorepo:** one repository holds the frontend, backend, and model code.
 - **Modular monolith:** there is one backend server, and its code is split into clear modules.
 - **Training:** run by hand in a terminal. It never runs inside the server.
+
+## Runtime responsibilities
+
+| Layer | Owns | Never owns |
+|---|---|---|
+| `apps/web` | Screens, browser interaction, accessible forms, streamed-text rendering, API calls | Database access, model weights, password/session secrets |
+| `apps/api` | Authentication, authorization, API validation, database transactions, generation lifecycle, safe errors | Training, browser layout, client-side tokens |
+| `model` | Data preparation, tokenizer, model, training, evaluation, checkpoint export, inference contract | HTTP routes, user accounts, database access |
+| PostgreSQL | Users, conversations, messages, migrations | Generation state, model artifacts, browser settings |
+| `packages/ui` | Reusable visual tokens and presentational components | API requests, account state, business rules |
+
+The important boundary is simple: the browser can ask the API for work; only the API reads the database and model artifact; only the offline training code writes model artifacts.
+
+## Main request flows
+
+```mermaid
+sequenceDiagram
+    participant U as User browser
+    participant W as Next.js web
+    participant A as FastAPI API
+    participant D as PostgreSQL
+    participant M as Inference engine
+
+    U->>W: Register or log in
+    W->>A: Auth request (HTTPS)
+    A->>D: Store/read account and session state
+    A-->>W: HTTP-only session cookie
+    U->>W: Send prompt
+    W->>A: Authenticated chat request
+    A->>D: Verify owner, save user message, load context
+    A->>M: Generate with stop event
+    M-->>A: Text chunks
+    A-->>W: SSE start/delta/done events
+    A->>D: Save completed or stopped reply
+    W-->>U: Render streamed reply
+```
+
+Authentication identifies the user. Authorization is repeated on every conversation query, so a guessed ID cannot reveal another user's data. The model has a global generation lock: one reply runs at a time and another request receives the documented busy response rather than exhausting memory.
 
 ## Folders
 
@@ -48,6 +86,22 @@ turbo.json            Turborepo tasks (exists)
 | `model/src/train.py` | `model.py`, `tokenizer.py`, `data.py` | `apps/api` |
 
 The backend's internal module rules are in [BACKEND.md](BACKEND.md#modules).
+
+## Quality and delivery boundaries
+
+```mermaid
+flowchart LR
+    C[Developer change] --> Q[Local quality checks]
+    Q --> G[GitHub Actions CI]
+    G --> R[Manual release review]
+    R --> D[Public deployment]
+    D --> O[Health, metrics, and rollback evidence]
+```
+
+- Local commands give fast feedback while a task is being built.
+- GitHub Actions repeats safe checks in a clean environment; it never trains, deploys, or uses private model data.
+- A live release happens only after manual security, ownership, and performance checks. Deployment credentials never appear in the repository.
+- [QUALITY.md](QUALITY.md) is the single quality-gate and measurement plan.
 
 ## API
 
@@ -85,6 +139,17 @@ Checked on 2026-11-02. Package tables and their test status are in [MODEL.md](MO
 | Docker | 29.8.1 | Installed; its server didn't respond when checked |
 
 **Starter not confirmed in the real repo:** see P1-T3.
+
+## Performance architecture
+
+Performance is measured separately at four points: training, local inference, API streaming, and public hosting. The system deliberately starts small:
+
+- Training writes pre-tokenized files and resumable checkpoints; it uses MPS only after the hardware check confirms it.
+- Inference loads one exported model at startup. CPU and MPS are benchmarked with real weights before choosing a serving device.
+- The API moves blocking generation to a worker thread, sends Server-Sent Events, and returns database connections before generation continues.
+- The browser batches visible stream updates, loads code highlighting only when needed, and keeps local fonts/assets.
+
+`torch.compile`, mixed precision, quantization, caches, queues, extra workers, and a larger host are optimisation candidates—not promises. Each requires a correct baseline and before/after evidence under [QUALITY.md](QUALITY.md#performance-accelerators-and-guardrails).
 
 ## Security and privacy
 

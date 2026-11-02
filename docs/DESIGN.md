@@ -1,6 +1,25 @@
 # brainX: Design
 
-The interface is a premium chat tool that combines **Minimalism, Neo-Brutalism, and developer-focused UI**: clear structure, strong type, bold lines, and little decoration. Phase 6 builds it, and [FRONTEND.md](FRONTEND.md) has the tasks.
+The interface is a premium chat tool that combines **Minimalism, Neo-Brutalism, and developer-focused UI**: clear structure, strong type, bold lines, and little decoration. Phase 6 builds it, [FRONTEND.md](FRONTEND.md) describes implementation, and [QUALITY.md](QUALITY.md) describes visual, accessibility, and browser checks.
+
+## Design-system architecture
+
+The shared design system lives in `packages/ui`. It is the single visual source of truth for both `apps/web` and `apps/admin`; application features do not copy its components or redefine its tokens.
+
+```text
+packages/ui/src/styles.css       semantic colour, type, spacing, border, shadow tokens
+packages/ui/src/*.tsx            reusable presentational components and variants
+apps/web/components/             chat- and auth-specific composition
+apps/admin/components/           admin-specific composition
+```
+
+| Rule | Reason |
+|---|---|
+| A token describes a purpose, not a page | `accent` keeps the same meaning in every screen and theme |
+| A shared component owns its visual states | Two apps cannot accidentally create different focus, disabled, or dark-mode behaviour |
+| Feature components compose shared primitives | Chat streaming, account forms, and API state stay outside the design system |
+| New shared components use the generator and a visible example | Names, exports, styles, and accessibility stay consistent |
+| No inline hex colours in feature components | Theme changes remain one-token changes |
 
 ## Colours
 
@@ -30,6 +49,18 @@ Contrast against each theme's background was calculated: every colour is at leas
 | Shadow | Only a hard offset on the primary button and dialogs: `4px 4px 0 fg` |
 | Icons | Lucide, always with a text label or accessible name |
 | Gradients and blur | None |
+
+### Token usage
+
+| Need | Use | Never do |
+|---|---|---|
+| Page surface | `bg` / `fg` | Hard-code a light-only background |
+| Secondary text | `muted` | Use colour alone to communicate an error or state |
+| Primary action and focus | `accent` + `accent-fg` | Use a second competing primary colour |
+| Error | `error` plus a written explanation | Show only a red border or icon |
+| Spacing | 4px scale | Add an arbitrary margin that breaks rhythm |
+
+Component variants are intentionally limited: `default`, `secondary` where needed, `destructive` where an irreversible action needs it, plus `disabled`, `loading`, `focus-visible`, and theme states. A new variant needs a concrete screen and test, not only a future possibility.
 
 ## Motion
 
@@ -85,6 +116,16 @@ Motion should explain a change, and never decorate.
 
 **Loading:** show a plain "Generating..." line until the first token arrives. Don't use spinners or shimmer effects.
 
+### Form and account states
+
+| Component | Required states | Behaviour |
+|---|---|---|
+| Registration form | Empty, typing, invalid email, weak/invalid password, submitting, server error | Labels stay visible; field errors are connected to inputs; password never appears in a toast or log |
+| Login form | Empty, invalid credentials, submitting, locked/rate-limited response | Use one generic invalid-credentials message so the UI does not reveal which account exists |
+| Logout control | Default, submitting | Clear visible account state only after the server confirms logout |
+| Protected chat route | Session loading, unauthenticated redirect, authenticated | Never briefly render another user's conversation while session state loads |
+| Destructive delete | Default, confirmation, failure | Names the conversation being removed and remains keyboard accessible |
+
 ## Replies
 
 - Assistant replies render as Markdown, including tables and code blocks. User messages stay plain text.
@@ -99,3 +140,15 @@ Motion should explain a change, and never decorate.
 - Every input has a label, and icon-only buttons have accessible names.
 - Errors use text as well as colour.
 - Streaming text uses `aria-live="polite"`.
+
+## Responsive and visual quality checks
+
+Every user-facing page is reviewed at 375px, 768px, and 1280px in light and dark themes. The review checks no horizontal scroll, readable line length, visible focus, keyboard-only completion, error text, and reduced-motion behaviour.
+
+The design system is tested in three layers:
+
+1. **Component tests:** render state/variant combinations and keyboard interactions.
+2. **Browser tests:** cover login, sidebar, composer, settings, stream/stop, and responsive navigation.
+3. **Human visual review:** compare the live screen against this document before release.
+
+Screenshots are evidence for layout only; they do not prove that buttons, focus handling, themes, or streaming behaviour work. Those need interactive tests. See [QUALITY.md](QUALITY.md#test-matrix).

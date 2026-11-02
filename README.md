@@ -17,6 +17,7 @@ brainX is a student portfolio project with one goal: to understand how a languag
 - [Planned features](#planned-features)
 - [How it fits together](#how-it-fits-together)
 - [The model](#the-model)
+- [Quality and delivery](#quality-and-delivery)
 - [Tech stack](#tech-stack)
 - [Repository layout](#repository-layout)
 - [Status](#status)
@@ -97,6 +98,10 @@ Details: [MODEL.md](docs/MODEL.md).
 
 Packages are added only in the task that needs them. Versions and reasons are in the package tables of [MODEL.md](docs/MODEL.md#packages), [BACKEND.md](docs/BACKEND.md#packages), and [FRONTEND.md](docs/FRONTEND.md#packages).
 
+## Quality and delivery
+
+The portfolio is planned like a full-stack product: static checks, unit/API/component tests, PostgreSQL integration tests, Playwright browser tests, security reviews, performance measurements, GitHub Actions CI, and a manual HTTPS release gate. None of those checks is claimed as complete until it has real output. See [QUALITY.md](docs/QUALITY.md) for the exact test matrix, metrics, accelerators, and release checklist.
+
 ## Repository layout
 
 ```text
@@ -115,18 +120,18 @@ docs/             Project documentation
 
 ## Status
 
-The plan has 8 phases and 79 small tasks. Phase 1 is in progress.
+The plan has 8 phases and 84 small tasks. Phase 1 is in progress.
 
 | Phase | Focus | Tasks | Status |
 |---|---|:-:|---|
-| 1 | Planning and setup | 6 | In progress (3 done, 1 partly) |
+| 1 | Planning and setup | 7 | In progress (3 done, 1 partly) |
 | 2 | Dataset and tokenizer | 10 | Not started |
 | 3 | Model and training | 11 | Not started |
 | 4 | Evaluation and local inference | 8 | Not started |
-| 5 | Backend | 20 | Not started |
-| 6 | Frontend | 16 | Not started |
-| 7 | Integration | 3 | Not started |
-| 8 | Final testing and demo | 5 | Not started |
+| 5 | Backend | 21 | Not started |
+| 6 | Frontend | 17 | Not started |
+| 7 | Integration | 4 | Not started |
+| 8 | Final testing and demo | 6 | Not started |
 
 The model comes first: backend and frontend work starts only after a trained model generates text locally with no external API. Live status: [PROGRESS.md](docs/PROGRESS.md). All tasks: [TASKS.md](docs/TASKS.md).
 
@@ -168,6 +173,7 @@ There is nothing to run yet. The setup and run commands will be written as the t
 | [PROGRESS.md](docs/PROGRESS.md) | Current status and open problems |
 | [GUIDE.md](docs/GUIDE.md) | Student guide to working with the agent |
 | [DOCUMENTATION_AUDIT.md](docs/DOCUMENTATION_AUDIT.md) | A review of how complete the documentation is |
+| [QUALITY.md](docs/QUALITY.md) | Test strategy, performance evidence, GitHub Actions plan, and release gates |
 
 ## Limitations
 
