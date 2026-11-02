@@ -70,7 +70,7 @@ Motion should explain a change, and never decorate.
 | Header | Includes the small-model notice, theme control, and settings |
 | Sidebar | Open, collapsed, slide-over on mobile |
 | New chat button | Default, hover, focus, disabled while streaming |
-| Conversation list | Empty, with items, selected item |
+| Conversation list | Loading, empty, with items, selected item, delete confirmation |
 | Message list | Empty, with messages, loading the first token |
 | User message | Default |
 | Assistant message | Streaming, complete, stopped, failed |
@@ -79,7 +79,7 @@ Motion should explain a change, and never decorate.
 | Code block | Plain, highlighted, copied |
 | Copy button | Default, copied |
 | Settings dialog | Default, invalid value |
-| Toast and error notice | Busy, no model, server unreachable, storage unavailable |
+| Toast and error notice | Busy, no model, server unreachable, database unavailable, settings not saved |
 
 **Empty state:** a short line saying "Ask something simple to begin."
 

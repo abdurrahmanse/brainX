@@ -1,77 +1,113 @@
 # brainX: Tasks
 
-Do one task at a time, in order, after approval. Tasks run on the workflow in [AGENTS.md](../AGENTS.md). Current status is in [PROGRESS.md](PROGRESS.md).
+Do one task at a time, in order, after approval. The workflow is in [AGENTS.md](../AGENTS.md), and current status is in [PROGRESS.md](PROGRESS.md).
 
-Files marked with `*` are changed rather than created. Check the real repo before each task, because this plan can change as we learn.
+Check the real repo before each task, because this plan can change as we learn.
+
+## Phase order
+
+```mermaid
+flowchart LR
+    P1[1 Setup] --> P2[2 Model preparation] --> P3[3 Training] --> P4[4 Evaluation]
+    P4 --> M{{Model milestone}}
+    M --> P5[5 Backend] --> P6[6 Frontend] --> P7[7 Integration] --> P8[8 Final testing]
+```
 
 ## Phase 1: Planning & Setup
+
+Files marked with `*` already exist and get changed.
 
 | ID | Task | Files | Done when |
 |---|---|---|---|
 | P1-T1 | Requirements and environment assessment | None | Owner confirms hardware, model path, and features |
 | P1-T2 | Project documentation | `docs/`, `AGENTS.md`*, `CLAUDE.md`, `README.md`* | Docs exist and agree, and old docs are removed |
 | P1-T3 | Check the Turborepo starter builds | Only what a found problem requires | Install, build, lint, and type-check run, and any error is explained |
-| P1-T4 | Remove unused starter parts, with owner approval | `apps/docs`, `packages/ui`, starter READMEs, `apps/web`* | Build still passes without them |
-| P1-T5 | Clean up git ignores | `.gitignore`*, `.DS_Store`, `package.json`* | Generated and private files are ignored |
-| P1-T6 | Set up Python and connect it to Turborepo | `pyproject.toml`, `.python-version`, `uv.lock`, `turbo.json`*, `package.json`*, `pnpm-workspace.yaml`*, `apps/api/package.json` | One command runs a sample pytest test, and root imports work |
+| P1-T4 | Remove unused starter parts, with owner approval | `apps/admin`, `packages/ui`, starter READMEs, `apps/web`*, empty `models/` | Build still passes without them |
+| P1-T5 | Clean up git ignores | `.gitignore`*, `.DS_Store`, `package.json`* | `model/data`, `model/checkpoints`, `model/outputs`, and other generated or private files are ignored |
+| P1-T6 | Set up the Python workspace | `pyproject.toml`, `.python-version`, `uv.lock`, `model/pyproject.toml`, `model/src/__init__.py`, `model/tests/test_setup.py`, `turbo.json`*, `package.json`* | One command runs the sample pytest test |
 
 ## Phase 2: Model Preparation
 
-| ID | Task | Files | Done when |
-|---|---|---|---|
-| P2-T1 | Confirm model size and limits with the owner | `docs/MODEL.md`* | Owner chooses a size after an explanation |
-| P2-T2 | Confirm dataset licences and versions | `docs/MODEL.md`* | Each dataset has a confirmed licence and version, or is replaced |
-| P2-T3 | Download the datasets | `model/prepare_data.py`, `pyproject.toml`* | Download works and won't repeat unnecessarily |
-| P2-T4 | Clean and split the text | `model/prepare_data.py`*, `model/tests/test_prepare_data.py` | Tests pass, and splits have no duplicates across them |
-| P2-T5 | Format instruction and conversation data | `model/prepare_data.py`*, `model/tests/test_prepare_data.py`* | Tests pass on Dolly and OASST1 samples |
-| P2-T6 | Write a short data report | `docs/MODEL.md`* | Real counts and samples are recorded |
-| P2-T7 | Write BPE training | `model/tokenizer.py`, `model/tests/test_tokenizer.py` | Result matches a hand-worked example |
-| P2-T8 | Write encode, decode, and chat format | `model/tokenizer.py`*, `model/tests/test_tokenizer.py`* | Text, emoji, and special tokens round-trip |
-| P2-T9 | Train the tokenizer and encode the data | `model/prepare_data.py`* | Vocabulary has 8,000 tokens, and decoding a slice returns the source |
-| P2-T10 | Add training configuration | `model/config.py` | S, M, and L load with the expected values |
+Details are in [MODEL.md](MODEL.md#tasks).
+
+| ID | Task | New packages |
+|---|---|---|
+| P2-T1 | Environment and hardware inspection | `torch`, `jupyterlab`, `ipykernel`, `psutil` |
+| P2-T2 | Model strategy and size decision | None |
+| P2-T3 | Dataset research | None |
+| P2-T4 | Dataset loading | `datasets` |
+| P2-T5 | Dataset exploration | `pandas`, `numpy`, `matplotlib` |
+| P2-T6 | Data cleaning | `ftfy`, if needed |
+| P2-T7 | Dataset splitting | None |
+| P2-T8 | Tokenizer training | `regex` |
+| P2-T9 | Encode, decode, and chat format | None |
+| P2-T10 | Prepare token files | None |
 
 ## Phase 3: Model Training
 
-| ID | Task | Files | Done when |
-|---|---|---|---|
-| P3-T1 | Write the Transformer | `model/gpt.py`, `model/tests/test_gpt.py` | Size M has the expected parameter count, and later tokens can't affect earlier outputs |
-| P3-T2 | Write the training loop | `model/train.py`, `model/tests/test_train.py` | Starting loss is near 8.99, and one small batch overfits |
-| P3-T3 | Add checkpoint saving and resume | `model/train.py`*, `model/tests/test_train.py`* | Resume continues from the saved step |
-| P3-T4 | Save metrics and run details | `model/train.py`* | Each run saves config, seed, commit, and metrics |
-| P3-T5 | Run a short training test | `model/train.py`* if needed | A 10-minute size S run finishes and real speed is recorded |
-| P3-T6 | Add fine-tuning mode | `model/train.py`*, `model/tests/test_train.py`* | Tests confirm only assistant tokens count toward loss |
-| P3-T7 | Write fixed test prompts before the full run | `model/eval_prompts.jsonl` | About 30 prompts exist |
-| P3-T8 | Full pre-training run, with owner approval | `docs/PROGRESS.md`* | Real results and checkpoint location are recorded |
-| P3-T9 | Fine-tuning run, with owner approval | `docs/PROGRESS.md`* | Real results and checkpoint location are recorded |
+Details are in [MODEL.md](MODEL.md#tasks). Runs that take a long time always need separate approval.
+
+| ID | Task | New packages |
+|---|---|---|
+| P3-T1 | Model architecture selection | None |
+| P3-T2 | Model implementation | None |
+| P3-T3 | Training configuration | `pyyaml` |
+| P3-T4 | Training loop | `tqdm` |
+| P3-T5 | Checkpoints and failure recovery | None |
+| P3-T6 | Training smoke test (needs approval to run) | None |
+| P3-T7 | Fine-tuning mode | None |
+| P3-T8 | Fixed test prompts | None |
+| P3-T9 | Full pre-training run (needs approval to run) | None |
+| P3-T10 | Fine-tuning run (needs approval to run) | None |
+| P3-T11 | Checkpoint validation | None |
 
 ## Phase 4: Model Evaluation
 
-| ID | Task | Files | Done when |
-|---|---|---|---|
-| P4-T1 | Write text generation and sampling | `model/inference.py`, `model/tests/test_inference.py` | With a fixed seed, CPU output repeats exactly, and stop tokens work |
-| P4-T2 | Add context trimming for conversations | `model/inference.py`*, `model/tests/test_inference.py`* | Tests cover short and over-limit conversations |
-| P4-T3 | Add streaming output | `model/inference.py`*, `model/tests/test_inference.py`* | Split characters such as emoji decode correctly |
-| P4-T4 | Evaluate against the bigram baseline and fixed prompts | `model/evaluate.py`, `model/tests/test_evaluate.py`, `docs/MODEL.md`* | Real scores and raw outputs are saved |
-| P4-T5 | Add a terminal chat and measure speed and memory | `model/inference.py`*, `docs/MODEL.md`* | Owner chats in a terminal, and real numbers are recorded |
+Details are in [MODEL.md](MODEL.md#tasks).
 
-**Model milestone:** the owner confirms the local model generates text from a prompt without any external API. Phase 5 starts only after this.
+| ID | Task | New packages |
+|---|---|---|
+| P4-T1 | Text generation | None |
+| P4-T2 | Context handling | None |
+| P4-T3 | Streaming and cancellation | None |
+| P4-T4 | Evaluation | None |
+| P4-T5 | Baseline comparison | None |
+| P4-T6 | Inference testing | None |
+| P4-T7 | Model artifact export | `safetensors`, if approved |
+| P4-T8 | FastAPI integration readiness | None |
+
+**Model milestone:** the owner confirms that the local model generates text from a prompt without any external API. Phase 5 starts only after this.
 
 ## Phase 5: Backend
 
-| ID | Task | Files | Done when |
-|---|---|---|---|
-| P5-T1 | Set up FastAPI with `GET /health` | `apps/api/main.py`, `apps/api/tests/test_api.py`, `pyproject.toml`* | Test passes, and the server runs on `127.0.0.1` |
-| P5-T2 | Load the model at startup | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | Health reports the model state, and a missing model doesn't crash it |
-| P5-T3 | Add `POST /chat` with a full reply | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | A test request gets a reply using a small test checkpoint |
-| P5-T4 | Stream the reply with SSE | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | Events arrive in the documented order |
-| P5-T5 | Add errors and the one-reply limit | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | 409, 422, and 503 are tested |
-| P5-T6 | Accept generation settings, and return defaults and limits | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | Values at and beyond each limit are tested |
-| P5-T7 | Stop generating when the client disconnects | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | A real server test shows generation stops and the model is free again |
-| P5-T8 | Allow the frontend through CORS | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | The allowed origin works, and others are refused |
+Details are in [BACKEND.md](BACKEND.md#tasks).
+
+| ID | Task | New packages |
+|---|---|---|
+| P5-T1 | FastAPI setup | `fastapi`, `uvicorn`, `pytest`, `httpx`, `ruff`, `mypy` |
+| P5-T2 | Configuration | `pydantic-settings` |
+| P5-T3 | PostgreSQL setup | None |
+| P5-T4 | Async ORM | `sqlalchemy[asyncio]`, `asyncpg`, `pytest-asyncio` |
+| P5-T5 | Alembic | `alembic` |
+| P5-T6 | Database models | None |
+| P5-T7 | API schemas and error format | None |
+| P5-T8 | Conversation endpoints | None |
+| P5-T9 | Message retrieval | None |
+| P5-T10 | Local model integration | None |
+| P5-T11 | Chat endpoint and SSE streaming | None |
+| P5-T12 | Cancellation | None |
+| P5-T13 | Generation settings | None |
+| P5-T14 | Error handling | None |
+| P5-T15 | Structured logging | `structlog` |
+| P5-T16 | Security and shutdown | None |
+| P5-T17 | Test coverage and boundaries | `pytest-cov` |
+| P5-T18 | Performance checks | `prometheus-fastapi-instrumentator` |
+| P5-T19 | Docker setup | Docker Compose |
+| P5-T20 | Security scans and pre-commit | `bandit`, `pip-audit`, `pre-commit` |
 
 ## Phase 6: Frontend
 
-Full details for each task are in [FRONTEND.md](FRONTEND.md#tasks).
+Details are in [FRONTEND.md](FRONTEND.md#tasks).
 
 | ID | Task | New packages |
 |---|---|---|
@@ -86,8 +122,8 @@ Full details for each task are in [FRONTEND.md](FRONTEND.md#tasks).
 | P6-T9 | Code highlighting | Shiki |
 | P6-T10 | Theme management | next-themes |
 | P6-T11 | Streaming UI integration | Sonner |
-| P6-T12 | Conversation state (confirm storage first) | Zustand |
-| P6-T13 | Settings interface | None |
+| P6-T12 | Conversation state | TanStack Query |
+| P6-T13 | Settings interface | Zustand |
 | P6-T14 | Responsive design | Motion, if needed |
 | P6-T15 | Accessibility | None |
 | P6-T16 | UI testing and final polish | None |
@@ -98,8 +134,8 @@ Phase 6 connects the UI to the backend, and this phase proves the whole product 
 
 | ID | Task | Files | Done when |
 |---|---|---|---|
-| P7-T1 | Test the full chat with the real model | `docs/PROGRESS.md`* | Streaming, Stop, follow-ups, and reload all work and are recorded |
-| P7-T2 | Test every failure from the browser | `apps/web/`*, `apps/api/`* for approved fixes | Busy, no model, server down, and blocked storage each show the right message |
+| P7-T1 | Test the full chat with the real model | `docs/PROGRESS.md`* | Streaming, Stop, follow-ups, reload, and delete all work and are recorded |
+| P7-T2 | Test every failure from the browser | `apps/web/`*, `apps/api/`* for approved fixes | Busy, no model, server down, and database down each show the right message |
 | P7-T3 | Add essential Playwright tests | `apps/web/e2e/`, `apps/web/playwright.config.ts`, `apps/web/package.json`* | Send, stream, stop, and reload pass using a small test checkpoint |
 
 ## Phase 8: Final Testing

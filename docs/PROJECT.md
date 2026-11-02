@@ -14,7 +14,7 @@ The main goals are to learn how language models work and to finish a working dem
 | Language | English only |
 | Tokenizer | Our own byte-level BPE |
 | Training data | AI-generated and share-alike datasets are allowed, and the trained weights stay private |
-| Stack | Turborepo, Next.js, React, TypeScript, Tailwind CSS, FastAPI, PyTorch. Frontend packages are in [FRONTEND.md](FRONTEND.md) |
+| Stack | Turborepo, Next.js, React, TypeScript, Tailwind CSS, FastAPI, PostgreSQL, PyTorch. Packages are in [FRONTEND.md](FRONTEND.md), [BACKEND.md](BACKEND.md), and [MODEL.md](MODEL.md) |
 | Architecture | Lightweight modular monolith, with no microservices |
 | Deployment | Local only |
 
@@ -30,7 +30,7 @@ The main goals are to learn how language models work and to finish a working dem
 **Conversations**
 
 5. Start a new chat from a collapsible sidebar.
-6. Reopen earlier conversations from the history list.
+6. Reopen or delete earlier conversations from the history list, saved in PostgreSQL.
 
 **Experience**
 
@@ -41,11 +41,7 @@ The main goals are to learn how language models work and to finish a working dem
 
 ## Not in the MVP
 
-Login, payments, image generation, voice, file upload, web search, cloud deployment, and renaming or deleting chats.
-
-## Waiting for confirmation
-
-**Where history is saved.** The recommendation is the browser's `localStorage`, which needs no database. P6-T12 asks you to confirm this. Your earlier choice to leave out SQLite stays in place until then.
+Login, payments, image generation, voice, file upload, web search, cloud deployment, renaming chats, Redis, and background job queues.
 
 ## Definition of finished
 

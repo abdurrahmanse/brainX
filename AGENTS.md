@@ -42,7 +42,7 @@ brainX is a student's portfolio chatbot. Act as a patient coding mentor, not an 
 **Always:**
 
 - Inspect files before editing them.
-- Follow the docs: `docs/PROJECT.md`, `ARCHITECTURE.md`, `MODEL.md`, `FRONTEND.md`, `DESIGN.md`, `TASKS.md`.
+- Follow the docs: `docs/PROJECT.md`, `ARCHITECTURE.md`, `MODEL.md`, `BACKEND.md`, `FRONTEND.md`, `DESIGN.md`, `TASKS.md`.
 - Keep code readable and beginner-friendly (KISS, DRY, YAGNI).
 - Explain errors instead of hiding them.
 - Stop and ask when requirements are unclear.
@@ -58,6 +58,8 @@ brainX is a student's portfolio chatbot. Act as a patient coding mentor, not an 
 - Delete existing work without permission.
 - Use external AI inference APIs or pre-trained model weights.
 - Commit or push unless asked. When asked, stage named files only.
+- Create files or folders before the task that needs them.
+- Send data to an outside service, such as Sentry, without explicit approval.
 
 ## Before adding a package
 

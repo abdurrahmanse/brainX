@@ -1,6 +1,6 @@
 # brainX: Frontend
 
-This is the plan for `apps/web`. The visual rules are in [DESIGN.md](DESIGN.md), and the API is in [ARCHITECTURE.md](ARCHITECTURE.md#api). Nothing here is built yet.
+This is the plan for `apps/web`. The visual rules are in [DESIGN.md](DESIGN.md), and the API is in [BACKEND.md](BACKEND.md#api). Nothing here is built yet.
 
 Phase 6 starts only after the model milestone and Phase 5, so the UI connects to a real backend.
 
@@ -25,7 +25,8 @@ Each package is added only in its task, after approval.
 | `shiki` | 4.5.0 | Code highlighting | P6-T9 |
 | `next-themes` | 0.4.6 | Light and dark themes with no flash on load | P6-T10 |
 | `sonner` | 2.0.8 | Toast notifications | P6-T11 |
-| `zustand` | 5.0.16 | Conversations and settings saved in the browser | P6-T12 |
+| `@tanstack/react-query` | 5.105.1 | Conversations and messages from the API | P6-T12 |
+| `zustand` | 5.0.16 | Settings saved in the browser | P6-T13 |
 | `motion` | 14.9.0 | Small transitions that CSS can't handle well | P6-T14 |
 | `@playwright/test` | 1.64.1 | Essential browser tests | P7-T3 |
 
@@ -35,7 +36,6 @@ Each package is added only in its task, after approval.
 
 | Package | Version | Add only if | Why it starts out unused |
 |---|---|---|---|
-| `@tanstack/react-query` | 5.105.1 | Conversations move to a backend database | The only server data is `/health`, and chat is a stream that a simple `fetch` handles |
 | `react-hook-form`, `zod`, `@hookform/resolvers` | 7.91.0, 4.6.7, 7.0.1 | Settings become a complex form | The basic panel has four number fields and a theme choice |
 | `react-resizable-panels` | 4.16.1 | The collapsible sidebar isn't enough | It's optional, and a collapsible sidebar covers the requirement |
 
@@ -77,15 +77,13 @@ Each piece of state has one owner, so nothing is stored twice.
 
 | State | Owner | Saved? |
 |---|---|---|
-| Conversations and messages | Zustand store | Yes, in `localStorage` |
+| Conversations and saved messages | TanStack Query cache, from the API | Yes, in PostgreSQL |
 | Generation settings | Zustand store | Yes, in `localStorage` |
 | Theme | `next-themes` | Yes, handled by the package |
 | Text being typed, sidebar open or closed | React state | No |
-| Reply being streamed | Chat feature, then saved to the store when finished or stopped | Final text only |
+| Reply being streamed | Chat feature, then refreshed from the API | The server saves the final text |
 
-**Conversation history (recommendation; P6-T12 asks you to confirm):** save it in the browser first. It needs no database or API change, but clearing browser data loses it, and it doesn't move between browsers. Using SQLite instead would add backend tasks and bring in TanStack Query.
-
-If `localStorage` is blocked or full, chat must keep working, and a toast explains that history isn't being saved.
+If `localStorage` is blocked or full, chat must keep working with default settings, and a toast explains that settings aren't being saved.
 
 ## Streaming and code highlighting
 
@@ -210,21 +208,21 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 
 ### P6-T12: Conversation state
 
-- **Purpose:** Keep and revisit conversations.
-- **Dependencies:** `zustand`.
-- **Files:** `apps/web/src/stores/`, `apps/web/src/features/conversations/`, `apps/web/src/features/chat/`.
-- **Instructions:** **First ask the owner to confirm the storage choice.** Add the store, title each conversation from its first message, connect New chat and the list, and send earlier messages as context.
-- **Acceptance:** Conversations survive a reload and can be reopened. Follow-up requests include earlier messages. Blocked storage doesn't break chat.
-- **Testing:** Tests cover the store, including blocked storage. Reload by hand.
+- **Purpose:** Show, reopen, and delete saved conversations.
+- **Dependencies:** `@tanstack/react-query`.
+- **Files:** `apps/web/src/app/`, `apps/web/src/features/conversations/`, `apps/web/src/features/chat/`, `apps/web/src/lib/`.
+- **Instructions:** Add the query provider. Connect New chat, the list, opening a chat, its messages, and delete to the API. Refresh the data after a reply finishes. Don't copy server data into another store.
+- **Acceptance:** Conversations survive a reload and server restart. Follow-up replies use earlier messages. Delete asks for confirmation.
+- **Testing:** Tests cover the list, delete, and loading states. Restart the API by hand.
 
 ### P6-T13: Settings interface
 
 - **Purpose:** Let the user change theme and generation settings.
-- **Dependencies:** shadcn `dialog`.
+- **Dependencies:** `zustand`, shadcn `dialog`.
 - **Files:** `apps/web/src/features/settings/`, `apps/web/src/stores/`, `apps/web/src/components/ui/`.
-- **Instructions:** Build a dialog for temperature, top-k, top-p, and max reply length, with a reset. Read defaults and limits from `GET /health`, and send the values with each message.
-- **Acceptance:** Settings survive a reload and reach the API. Out-of-range values can't be saved.
-- **Testing:** Tests cover limits and reset. Check a real request in browser dev tools.
+- **Instructions:** Build a dialog for temperature, top-k, top-p, and max reply length, with a reset. Read defaults and limits from `GET /api/v1/ready`, and send the values with each message.
+- **Acceptance:** Settings survive a reload and reach the API. Out-of-range values can't be saved. Blocked storage doesn't break chat.
+- **Testing:** Tests cover limits, reset, and blocked storage. Check a real request in browser dev tools.
 
 ### P6-T14: Responsive design
 
