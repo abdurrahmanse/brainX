@@ -4,7 +4,7 @@ Update this file only after verification supports it. If the repo disagrees with
 
 **Current phase:** Phase 1: Planning & Setup
 
-**Next task:** P1-T5: Finish git-ignore setup (remaining root package rename and build verification)
+**Next task:** P1-T6: Set up the Python workspace (requires the `pytest` package review and approval)
 
 ## Task status
 
@@ -14,7 +14,7 @@ Update this file only after verification supports it. If the repo disagrees with
 | P1-T2 | Done | Docs written; links, task IDs, and old-file references checked on 2026-11-02 |
 | P1-T3 | Done | On 2026-11-02, run in the real repo from the root: `pnpm install --frozen-lockfile` exit 0 (6 workspace projects, already up to date); `pnpm build` exit 0 (`web` and `admin` built with Next.js 16.3.8 and TypeScript 7.0.2, 2 of 2 tasks); `pnpm lint` exit 0 (3 of 3 tasks, `--max-warnings 0`); `pnpm check-types` exit 0 (3 of 3 tasks). No tracked file was changed by the runs. They created untracked `.turbo/` folders, which P1-T5 will ignore |
 | P1-T4 | Done | On 2026-11-02, the owner separately approved deletion of three starter READMEs, `packages/ui/src/code.tsx`, and 14 unused starter SVG files. `pnpm install` exit 0 (already up to date); `pnpm build` exit 0 (2 of 2 tasks); `pnpm lint` exit 0 (3 of 3 tasks); `pnpm check-types` exit 0 (3 of 3 tasks). No remaining import/reference to deleted files was found, and `git status --short` showed only the 18 approved deletions. |
-| P1-T5 | Partial | Done early at the owner's request, before P1-T4. Root `.gitignore` rewritten; `!.env.example` added to `apps/web/.gitignore` and `apps/admin/.gitignore`; `.DS_Store` and `.turbo/preferences/tui.json` untracked with `git rm --cached` (committed in `12dcd93`; both files are still on disk). `git check-ignore` confirmed 34 paths ignored and 21 required paths not ignored. **Not done:** renaming the root package from `my-turborepo` to `brainx` (spec step 3), and re-running `pnpm build` after it |
+| P1-T5 | Done | Done early in part, then completed on 2026-11-02: root `.gitignore` and both app `.gitignore` files cover the required generated/private paths and preserve `.env.example`; `.DS_Store` and `.turbo/preferences/tui.json` were untracked while remaining on disk. Root `package.json` was renamed from `my-turborepo` to `brainx`. `git check-ignore -v` showed rules for `.DS_Store`, `.turbo/x`, `.env`, model artifacts, and `.venv/x`; `git check-ignore -q .env.example` exited 1 (not ignored); no tracked `.DS_Store` or `.turbo` path remained; `pnpm build` exit 0 (2 of 2 tasks). |
 | UI foundation (early, owner's request) | Partial | On 2026-11-02: six UI packages installed (see [FRONTEND.md](FRONTEND.md#ui-foundation-done-early-2026-11-02)), a shared design system built in `packages/ui`, and `web` and `admin` rebuilt on it. `pnpm check-types`, `pnpm lint`, and `pnpm build` passed; `turbo boundaries` found no issues; a second `pnpm build` was fully cached (13 ms). Screenshots of both apps matched DESIGN.md in light, dark, and a true 390px width. **Not checked:** clicking the theme toggle, mobile menu, and toast in a browser; `pnpm dev` hot reload |
 | Agent system (setup, not a numbered task) | Partial | Seven Claude skills, seven Codex repo skills, two Claude read-only subagents, the guard hook, its deterministic test, and `docs/GUIDE.md` are written. On 2026-11-02 the guard test passed 13 approval cases and 5 allow cases when run directly. Claude Code and a restarted Codex session still need real discovery/integration checks; see Known problems. |
 

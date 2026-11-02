@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "brainx",
   "private": true,
   "scripts": {
     "build": "turbo run build",
