@@ -11,8 +11,8 @@ No training has run yet, so this file contains **no model results**. Measured nu
 | Data needed | Much more | Less |
 | Expected quality | Simple, and facts are often wrong | Usually much better |
 | Complexity | Higher: tokenizer, model, and training are all ours | Lower |
-| Size on this Mac | 17.4M parameters; about 5.5 GB GPU memory in a test | For example SmolLM2-135M, 134.5M parameters; not tested here |
-| Compute time | About 355M tokens in 8 hours, estimated from a test | Not tested here |
+| Size on this Mac | **6.8M parameters (size S, chosen)**; MPS memory will be measured in P3-T6 | For example SmolLM2-135M, 134.5M parameters; not tested here |
+| Compute time | Not estimated for size S yet; P3-T6 records a real smoke-test measurement | Not tested here |
 | Reproducibility | Same code, data, and config; MPS results may differ slightly | Also depends on the base model version |
 | Learning value | Highest | Lower for model internals |
 | Local inference | Runs through our own code | Would need more libraries |
@@ -25,11 +25,11 @@ Checked on 2026-11-02: Apple M4, 16 GB unified memory (68% free during the check
 
 | Size | Context | Dim | Layers | Parameters | Weights | Train speed (MPS) | Reply speed (CPU) | Reply speed (MPS) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| S | 256 | 256 | 6 | 6.8M | 27 MB | 26,524 tokens/s | 1,049 tokens/s | 58 tokens/s |
-| **M (recommended)** | 512 | 384 | 8 | 17.4M | 70 MB | 12,332 tokens/s | 509 tokens/s | 175 tokens/s |
+| **S (confirmed)** | 256 | 256 | 6 | 6.8M | 27 MB | 26,524 tokens/s | 1,049 tokens/s | 58 tokens/s |
+| M (not selected) | 512 | 384 | 8 | 17.4M | 70 MB | 12,332 tokens/s | 509 tokens/s | 175 tokens/s |
 | L | 512 | 512 | 10 | 35.8M | 143 MB | 7,101 tokens/s | 302 tokens/s | 279 tokens/s |
 
-All sizes used 8,000 tokens. Size M used about 5.5 GB of GPU memory at the moment measured. P2-T2 asks the owner to confirm the size.
+All sizes used 8,000 tokens. The 5.5 GB Size M memory result is only a prior short benchmark and does not describe selected size S. P3-T6 will measure size S with real data.
 
 **Limits of these numbers:**
 
@@ -74,7 +74,7 @@ model/
 
 ## Packages
 
-Nothing is installed yet. The Required and Optional sets resolved together on Python 3.13 on 2026-11-02.
+Installed in P1-T6 and P2-T1: `pytest`, `torch`, `jupyterlab`, `ipykernel`, and `psutil`. The remaining packages resolved together on Python 3.13 on 2026-11-02, but each is added only in its own approved task.
 
 | Status | Package | Version | Purpose | First used |
 |---|---|---:|---|---|
@@ -140,18 +140,18 @@ The vocabulary is fixed before pre-training, because changing it later would mak
 
 ## Model
 
-A GPT-style Transformer, written by hand. Values below are for size M.
+A GPT-style Transformer, written by hand. Values below are for confirmed size S; P3-T1 verifies the detailed architecture and exact parameter count.
 
 | Part | Value | Why |
 |---|---|---|
-| Vocabulary / context | 8,000 / 512 tokens | Enough for short chats |
-| Dimension / layers / heads | 384 / 8 / 8 | Fits this Mac |
-| Feed-forward size | 1,536 | Four times the dimension, as in GPT-2 |
+| Vocabulary / context | 8,000 / 256 tokens | Enough for short chats on size S |
+| Dimension / layers / heads | 256 / 6 / 8 | Chosen size S configuration |
+| Feed-forward size | 1,024 | Four times the dimension, as in GPT-2 |
 | Positions | Learned embeddings | Easy to understand |
 | Normalisation | LayerNorm before attention and feed-forward | Stable training |
 | Attention | Causal, so tokens can't see later tokens | Required for predicting the next token |
 | Output layer | Shares weights with the token embedding | Saves parameters |
-| Parameters | 17,437,440 | Calculated, and confirmed in the test |
+| Parameters | About 6.8M | P3-T1 calculates and confirms the exact count |
 
 ## Training pipeline
 
@@ -162,7 +162,7 @@ These are starting values to test, and they live in `configs/training.yaml`.
 | Setting | Pre-training | Fine-tuning |
 |---|---|---|
 | Device / precision | MPS, float32 | MPS, float32 |
-| Batch | 16 × 512 tokens | Chosen in P3-T7 |
+| Batch | 16 × 256 tokens | Starting point; P3-T6 measures memory and speed |
 | Gradient accumulation | 1, raised if memory is short | 1 |
 | Optimiser | AdamW | AdamW |
 | Peak learning rate | 3e-4, with warm-up then cosine decay | 5e-5 |
@@ -231,16 +231,16 @@ Measured results and subjective observations are reported separately.
 
 | Setting | Starting value |
 |---|---|
-| Device | CPU, which was faster for size M in the test; P4-T6 re-checks with real weights |
+| Device | CPU or MPS is chosen from P4-T6 measurements with real size S weights |
 | Temperature | 0.8 |
 | Top-k / top-p | 40 / 0.95 |
 | Repetition penalty | 1.1 |
-| Max new tokens | 200 |
+| Max new tokens | 96 |
 | Stop | `<\|end\|>` or `<\|eos\|>` |
 
 The settings panel can change temperature, top-k, top-p, and max new tokens per message. Evaluation always uses the defaults.
 
-**Context:** reply length is reserved from the 512 tokens. The default of 200 leaves 312 for the conversation, and the maximum of 300 leaves 212. Older messages get dropped when they don't fit.
+**Context:** reply length is reserved from the 256 tokens. The default of 96 leaves 160 for the conversation. P4-T6 confirms the final generation defaults; older messages get dropped when they don't fit.
 
 **Backend interface:** `apps/api` imports only `src/inference.py`. This is the contract that P4-T8 tests:
 
@@ -405,7 +405,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 - **Files:** `model/src/model.py`, `model/tests/test_model.py`, `model/notebooks/04_model_architecture.ipynb`*.
 - **Packages:** None.
 - **Steps:** Write attention, the block, the model, and a KV cache.
-- **Acceptance:** Size M has 17,437,440 parameters if chosen. Changing a later token can't affect earlier outputs. Cached and uncached logits match.
+- **Acceptance:** Selected size S has its calculated parameter count. Changing a later token can't affect earlier outputs. Cached and uncached logits match.
 - **Verify:** `uv run --package brainx-model pytest model/tests/test_model.py`
 - **Learning:** How causal attention stops the model seeing the future.
 
