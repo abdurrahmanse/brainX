@@ -79,7 +79,7 @@ P1-T1 and P1-T2 are done (see [PROGRESS.md](PROGRESS.md)). Commands run from the
   1. Keep the existing `node_modules` line in the root `.gitignore`, and add: `.DS_Store`, `.turbo/`, `.env`, `.env.*` with `!.env.example`, `.venv/`, `__pycache__/`, `*.pyc`, `.pytest_cache/`, `.ruff_cache/`, `.mypy_cache/`, `.ipynb_checkpoints/`, `model/data/`, `model/checkpoints/`, `model/outputs/`, and `.claude/settings.local.json`.
   2. Untrack the two tracked files with `git rm --cached`, which keeps them on disk. The guard hook will ask first.
   3. Rename the root package from `my-turborepo` to `brainx` in `package.json`. This is bundled here because the row already listed `package.json`; change nothing else in it.
-  4. `apps/web/.gitignore` already covers `.next` and `.env*`; leave it alone.
+  4. `apps/web/.gitignore` and `apps/admin/.gitignore` already cover `.next`, but their `.env*` line would also ignore `.env.example` (an app-level rule beats the root `!.env.example`). Add `!.env.example` right after `.env*` in both.
 - **Acceptance:** `git check-ignore -v` reports a rule for each path below, and `.env.example` is not ignored. Neither tracked file is in `git ls-files`, and both still exist on disk. `pnpm build` still works after the rename.
 - **Verify:** `git check-ignore -v .DS_Store .turbo/x .env model/data/x model/checkpoints/x model/outputs/x .venv/x`, then `git check-ignore -v .env.example` (should print nothing), `git ls-files | grep -E 'DS_Store|\.turbo'` (should print nothing), `test -f .DS_Store && echo still-on-disk`, `pnpm build`
 - **Learning:** What `.gitignore` does and does not do. It never untracks files git already tracks, which is why `git rm --cached` is needed.

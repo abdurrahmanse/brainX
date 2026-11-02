@@ -111,7 +111,7 @@ If `localStorage` is blocked or full, chat must keep working with default settin
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | `http://127.0.0.1:8000/api/v1` | Where the browser finds the API ([BACKEND.md](BACKEND.md#api)). Set it in `apps/web/.env.local`, and commit an `apps/web/.env.example`. |
 
-- `apps/web/.gitignore` contains `.env*`, which would also ignore `.env.example`. P6-T11 adds `!.env.example` to it.
+- `apps/web/.gitignore` contains `.env*`, which would also ignore `.env.example`. P1-T5 adds `!.env.example` after it, so the example file can be committed.
 - The API allows only the origin `http://localhost:3000`, so open the app at `localhost:3000`, not `127.0.0.1:3000`.
 
 ## Tasks
@@ -223,7 +223,7 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Purpose:** Connect the UI to the real model.
 - **Prerequisites:** P6-T10, and the backend streaming API (P5-T11, P5-T12).
 - **Packages:** `sonner`.
-- **Files:** `apps/web/src/lib/`, `apps/web/src/features/chat/`, `apps/web/src/components/ui/`, `apps/web/src/app/`, `apps/web/.env.example`, `apps/web/.gitignore`*.
+- **Files:** `apps/web/src/lib/`, `apps/web/src/features/chat/`, `apps/web/src/components/ui/`, `apps/web/src/app/`, `apps/web/.env.example`.
 - **Instructions:** Write the API client and stream reader. Read the API address from `NEXT_PUBLIC_API_URL` (see Configuration above). Handle the four stream events `start`, `delta`, `done`, and `error` described in [BACKEND.md](BACKEND.md#stream-events). Write the request and response types by hand in `src/types` (no generator: `openapi-typescript` needs TypeScript 5 and this repo uses 7), then compare them once with the fields in the API's `/openapi.json`. Stream replies into the message list, with Stop aborting the request. Show errors as toasts and inline notices.
 - **Acceptance:** A reply streams from the real backend, and Stop keeps the partial text. Errors for busy, no model, and server down are clear.
 - **Testing:** Test the stream reader with events split across chunks. Try each error by hand.
