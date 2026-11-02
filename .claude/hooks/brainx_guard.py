@@ -115,6 +115,8 @@ def check_git(args):
         return "pushes to a remote"
     if sub in ("rm", "clean"):
         return f"deletes files (git {sub})"
+    if sub in ("reset", "restore", "checkout"):
+        return f"can discard or replace working-tree changes (git {sub})"
     if sub == "add":
         flags = [a for a in rest if a.startswith("-") and a != "--"]
         paths = [re.sub(r"^(\./)+", "", a).rstrip("/") or "." for a in rest if not a.startswith("-")]
@@ -167,11 +169,8 @@ def check_argv(argv, depth):
         pos = positional(args, JS_VALUE_FLAGS)
         if pos:
             sub, packages = pos[0], pos[1:]
-            if sub == "add":
-                return f"installs packages ({cmd} add)"
-            if sub in ("install", "i"):
-                if cmd == "npm" or packages:
-                    return f"installs packages ({cmd} {sub})"
+            if sub in ("add", "install", "i", "ci", "remove", "uninstall"):
+                return f"changes installed packages ({cmd} {sub})"
     return None
 
 

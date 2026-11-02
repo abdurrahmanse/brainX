@@ -204,7 +204,7 @@ Note that TinyStories was written by GPT-3.5 and GPT-4. This project calls no AI
 
 ## Built with AI agents
 
-brainX is built by a student working with AI coding agents (Claude Code), one small task at a time. The rules are written down in [AGENTS.md](AGENTS.md): explain first, wait for approval, change only the approved files, run the checks, report only real results, then stop. The author reviews every change and decides what is committed. Helpers for Claude Code live in `.claude/`: seven skills, two read-only subagents, and a hook that asks before risky commands. They are not yet verified inside Claude Code; see [PROGRESS.md](docs/PROGRESS.md).
+brainX is built by a student working with AI coding agents (Claude Code or Codex), one small task at a time. The rules are written down in [AGENTS.md](AGENTS.md): explain first, wait for approval, change only the approved files, run the checks, report only real results, then stop. The author reviews every change and decides what is committed. Claude Code helpers live in `.claude/`: seven skills, two read-only subagents, and a hook that asks before risky commands. Codex-compatible repo skills live in `.agents/skills/`. The Claude Code runtime integration still needs a real-session check; see [PROGRESS.md](docs/PROGRESS.md).
 
 ## References
 

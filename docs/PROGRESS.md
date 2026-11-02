@@ -15,7 +15,7 @@ Update this file only after verification supports it. If the repo disagrees with
 | P1-T3 | Done | On 2026-11-02, run in the real repo from the root: `pnpm install --frozen-lockfile` exit 0 (6 workspace projects, already up to date); `pnpm build` exit 0 (`web` and `admin` built with Next.js 16.3.8 and TypeScript 7.0.2, 2 of 2 tasks); `pnpm lint` exit 0 (3 of 3 tasks, `--max-warnings 0`); `pnpm check-types` exit 0 (3 of 3 tasks). No tracked file was changed by the runs. They created untracked `.turbo/` folders, which P1-T5 will ignore |
 | P1-T5 | Partial | Done early at the owner's request, before P1-T4. Root `.gitignore` rewritten; `!.env.example` added to `apps/web/.gitignore` and `apps/admin/.gitignore`; `.DS_Store` and `.turbo/preferences/tui.json` untracked with `git rm --cached` (committed in `12dcd93`; both files are still on disk). `git check-ignore` confirmed 34 paths ignored and 21 required paths not ignored. **Not done:** renaming the root package from `my-turborepo` to `brainx` (spec step 3), and re-running `pnpm build` after it |
 | UI foundation (early, owner's request) | Partial | On 2026-11-02: six UI packages installed (see [FRONTEND.md](FRONTEND.md#ui-foundation-done-early-2026-11-02)), a shared design system built in `packages/ui`, and `web` and `admin` rebuilt on it. `pnpm check-types`, `pnpm lint`, and `pnpm build` passed; `turbo boundaries` found no issues; a second `pnpm build` was fully cached (13 ms). Screenshots of both apps matched DESIGN.md in light, dark, and a true 390px width. **Not checked:** clicking the theme toggle, mobile menu, and toast in a browser; `pnpm dev` hot reload |
-| Agent system (setup, not a numbered task) | Partial | Seven skills, two subagents, the guard hook, and `docs/GUIDE.md` are written. The guard script passed 103 sample commands when run alone. Nothing has been verified inside Claude Code yet; see Known problems |
+| Agent system (setup, not a numbered task) | Partial | Seven Claude skills, seven Codex repo skills, two Claude read-only subagents, the guard hook, its deterministic test, and `docs/GUIDE.md` are written. On 2026-11-02 the guard test passed 13 approval cases and 5 allow cases when run directly. Claude Code and a restarted Codex session still need real discovery/integration checks; see Known problems. |
 
 All other tasks in [TASKS.md](TASKS.md) have not started.
 
@@ -29,7 +29,7 @@ All other tasks in [TASKS.md](TASKS.md) have not started.
 
 - **Unused starter leftovers.** `packages/ui/src/code.tsx`, the starter images in each app's `public/`, and the duplicate Geist font files in each app are still there. P1-T4 asks before removing them.
 
-- **Agent system not verified inside Claude Code.** The guard hook did not fire in the session that created it (`git commit -h` ran without a prompt). The skills and subagents have never been run. The owner runs the first-session checks in [GUIDE.md](GUIDE.md) (section 2), then the results are recorded here.
+- **Agent system runtime checks remain.** The guard's direct deterministic test passes, but a real Claude Code session must still show the Bash hook and invoke one project skill. A new Codex session must discover one `.agents/skills/` workflow. The owner runs the first-session checks in [GUIDE.md](GUIDE.md), then records the real results here.
 
 ## Decisions waiting for approval
 

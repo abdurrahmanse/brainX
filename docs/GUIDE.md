@@ -20,7 +20,16 @@ The agent must not silently start the next task. It stops after each task.
 
 ## First-time agent-system check
 
-The Claude Code helpers are written but have not been verified inside a real Claude Code session. Run these checks once before relying on them.
+The repository supports both Claude Code and Codex. The Claude Code helpers and hook still need a real Claude Code session test. Codex skills are repo-local and need a new Codex session or restart before discovery is confirmed.
+
+### Platform selection
+
+| Platform | Project guidance | Task skills | Command guard |
+|---|---|---|---|
+| Claude Code | `AGENTS.md`, `CLAUDE.md` | `.claude/skills/` via `/brainx-*` | `.claude/hooks/brainx_guard.py` for Bash |
+| Codex | `AGENTS.md` | `.agents/skills/` via `$brainx-*` or matching requests | Codex permission/sandbox settings; it does not run the Claude hook |
+
+The two skill folders describe the same workflow. They are not a replacement for approval: package changes, deletion, training, commit, push, deployment, and external data actions still need the authorization required by `AGENTS.md`.
 
 ### 1. Open a new Claude Code session
 
@@ -48,6 +57,13 @@ Ask for a documentation review using the `doc-auditor` subagent.
 - **Check:** run `git status --short` again. It should still be clean.
 
 When all four checks work, update the related “Agent system not verified” note in [PROGRESS.md](PROGRESS.md) with real evidence.
+
+### Codex skill discovery check
+
+Start a new Codex session in the repository, then run `/skills` or invoke `$brainx-task` with a task ID.
+
+- **Expected:** Codex lists or uses the repo-local `brainx-*` skills from `.agents/skills/`.
+- **If a skill is missing:** restart Codex in the repository and confirm the folder path. Do not move the skills into a user-level folder; they belong to this project.
 
 ## Working on one task
 
@@ -111,6 +127,7 @@ Stop and ask questions when the agent:
 | `/brainx-train` | Prepares a training run without starting it |
 | `scope-reviewer`, `doc-auditor` | Read-only reviewers |
 | `brainx_guard.py` | Asks before risky shell commands; it is a safety net, not a security boundary |
+| `.agents/skills/` | Codex-compatible versions of the brainX task, verification, package, training, progress, walkthrough, and teaching workflows |
 
 ## Current next step
 

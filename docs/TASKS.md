@@ -399,6 +399,7 @@ This work was done before Phase 1 so the agent can follow the workflow in [AGENT
 | Item | Where | Status |
 |---|---|---|
 | Seven skills (`/brainx-task`, `-verify`, `-walkthrough`, `-teach`, `-progress`, `-package`, `-train`) | `.claude/skills/` | Written and committed; not yet run in Claude Code |
+| Seven Codex skills (`$brainx-task`, `-verify`, `-walkthrough`, `-teach`, `-progress`, `-package`, `-train`) | `.agents/skills/` | Written and validated structurally; requires a new Codex session to confirm discovery |
 | Two read-only subagents (`scope-reviewer`, `doc-auditor`) | `.claude/agents/` | Written and committed; not yet run |
 | Guard hook for risky commands | `.claude/hooks/brainx_guard.py`, `.claude/settings.json` | Script passed 103 sample commands alone; did not fire in the session that created it |
 | Student guide | [GUIDE.md](GUIDE.md) | Written |
