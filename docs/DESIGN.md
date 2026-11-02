@@ -15,7 +15,7 @@ The interface is a premium chat tool that combines **Minimalism, Neo-Brutalism, 
 
 The theme defaults to the system setting, and the user can choose System, Light, or Dark.
 
-Each colour has at least 7:1 contrast against its background, by calculation. This exceeds the 4.5:1 WCAG AA minimum for normal text. Code themes get checked in P6-T9.
+Contrast against each theme's background was calculated: every colour is at least 6.9:1 (light `accent` is 6.98:1, and the others are 7.0:1 or more). All exceed the 4.5:1 WCAG AA minimum for normal text. Code themes get checked in P6-T9.
 
 ## Type, spacing, and shape
 

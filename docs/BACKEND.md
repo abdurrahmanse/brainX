@@ -26,7 +26,7 @@ Nothing is installed yet. Each package is added in its task, after approval. Ess
 | `asyncpg` | 0.32.0 | PostgreSQL driver | Essential | `psycopg` | Tested with PostgreSQL 18.6 | P5-T4 |
 | `alembic` | 1.20.1 | Migrations | Essential | Hand-written SQL | Async template tested | P5-T5 |
 | `structlog` | 26.1.0 | Structured logs | Essential | `logging` | Works with request context | P5-T15 |
-| `pytest` | 9.2.0 | Tests | Essential | None | Shared with `model/` | P5-T1 |
+| `pytest` | 9.2.0 | Tests | Essential | None | Shared with `model/`; already installed in P1-T6 | P1-T6 |
 | `pytest-asyncio` | 1.4.1.post1 | Async tests | Essential | `anyio` plugin | | P5-T4 |
 | `httpx` | 0.28.1 | API test client | Essential | None | Dev only | P5-T1 |
 | `ruff` | 0.17.3 | Lint and format | Essential | None | Dev only | P5-T1 |
@@ -322,7 +322,7 @@ During streaming, a failure sends an `error` event with `generation_failed` or `
 | Setting | Default | Purpose |
 |---|---|---|
 | `BRAINX_DATABASE_URL` | Required | Async PostgreSQL URL |
-| `BRAINX_CHECKPOINT` | None | Model artifact folder |
+| `BRAINX_CHECKPOINT` | None | Model artifact folder, for example `model/checkpoints/export` (see [MODEL.md](MODEL.md#training-pipeline)) |
 | `BRAINX_DEVICE` | `cpu` | Generation device |
 | `BRAINX_CORS_ORIGIN` | `http://localhost:3000` | The one allowed browser origin |
 | `BRAINX_LOG_LEVEL` | `INFO` | Log detail |
@@ -365,7 +365,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T1: FastAPI setup
 
 - **Objective:** Run a minimal API.
-- **Dependencies:** P4-T8.
+- **Prerequisites:** P4-T8.
 - **Files:** `apps/api/pyproject.toml`, `apps/api/package.json`, `apps/api/src/app/main.py`, `apps/api/tests/test_health.py`, root `pyproject.toml`*, `uv.lock`*.
 - **Steps:** Add packages and `GET /api/v1/health`, then connect it to Turborepo.
 - **Acceptance:** The test passes, and the server listens only on `127.0.0.1`.
@@ -375,7 +375,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T2: Configuration
 
 - **Objective:** Validate settings in one place.
-- **Dependencies:** P5-T1.
+- **Prerequisites:** P5-T1.
 - **Files:** `apps/api/src/app/core/config.py`, `.env.example`, `apps/api/tests/test_config.py`, `apps/api/pyproject.toml`*, `uv.lock`*.
 - **Steps:** Add `pydantic-settings` and the documented settings.
 - **Acceptance:** A missing database URL gives a clear error.
@@ -385,17 +385,17 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T3: PostgreSQL setup
 
 - **Objective:** Create development and test databases.
-- **Dependencies:** P5-T2.
+- **Prerequisites:** P5-T2.
 - **Files:** `docs/BACKEND.md`*, `.env.example`*.
 - **Steps:** Explain and, with approval, create `brainx` and `brainx_test` on the local server, without touching other databases.
 - **Acceptance:** Both connect with `psql`.
-- **Verify:** `psql "$BRAINX_DATABASE_URL_SYNC" -c "select version()"`, where that variable holds a plain `postgresql://` URL for the check.
+- **Verify:** `psql -d brainx -c "select version()"` and `psql -d brainx_test -c "select version()"`
 - **Learning:** What a database server, database, and role are.
 
 ### P5-T4: Async ORM
 
 - **Objective:** Connect the app to PostgreSQL asynchronously.
-- **Dependencies:** P5-T3.
+- **Prerequisites:** P5-T3.
 - **Files:** `apps/api/src/app/core/database.py`, `apps/api/tests/test_database.py`, `apps/api/tests/conftest.py`, `apps/api/pyproject.toml`*, `uv.lock`*.
 - **Steps:** Add the engine, pool, and session dependency.
 - **Acceptance:** An async test query runs, and the session closes after use.
@@ -405,7 +405,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T5: Alembic
 
 - **Objective:** Set up migrations.
-- **Dependencies:** P5-T4.
+- **Prerequisites:** P5-T4.
 - **Files:** `apps/api/alembic.ini`, `apps/api/migrations/`, `apps/api/pyproject.toml`*, `uv.lock`*.
 - **Steps:** Set up the async template, using the configured database URL.
 - **Acceptance:** An empty migration upgrades and downgrades.
@@ -415,7 +415,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T6: Database models
 
 - **Objective:** Create both tables.
-- **Dependencies:** P5-T5.
+- **Prerequisites:** P5-T5.
 - **Files:** `apps/api/src/app/modules/conversations/models.py`, `apps/api/migrations/versions/`, `apps/api/tests/test_models.py`.
 - **Steps:** Add models, constraints, and indexes, then write the migration.
 - **Acceptance:** Tests cover cascade, unique order, and invalid values. Migrating up and down works.
@@ -425,7 +425,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T7: API schemas and error format
 
 - **Objective:** Define inputs, outputs, and the standard error.
-- **Dependencies:** P5-T6.
+- **Prerequisites:** P5-T6.
 - **Files:** `apps/api/src/app/modules/conversations/schemas.py`, `apps/api/src/app/core/exceptions.py`, `apps/api/src/app/main.py`*, `apps/api/tests/test_errors.py`.
 - **Steps:** Add Pydantic schemas and central error handlers.
 - **Acceptance:** Validation errors return the documented format.
@@ -435,7 +435,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T8: Conversation endpoints
 
 - **Objective:** Create, list, read, and delete conversations.
-- **Dependencies:** P5-T7.
+- **Prerequisites:** P5-T7.
 - **Files:** `apps/api/src/app/modules/conversations/router.py`, `apps/api/src/app/modules/conversations/service.py`, `apps/api/src/app/main.py`*, `apps/api/tests/test_conversations.py`.
 - **Steps:** Add the service and routes, with pagination.
 - **Acceptance:** Each route and `404` is tested.
@@ -445,7 +445,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T9: Message retrieval
 
 - **Objective:** Read a conversation's messages.
-- **Dependencies:** P5-T8.
+- **Prerequisites:** P5-T8.
 - **Files:** `apps/api/src/app/modules/conversations/router.py`*, `apps/api/src/app/modules/conversations/service.py`*, `apps/api/tests/test_conversations.py`*.
 - **Steps:** Add the paginated route, plus the methods chat needs to save messages.
 - **Acceptance:** Order and limits are tested.
@@ -455,7 +455,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T10: Local model integration
 
 - **Objective:** Load the model safely, and report its state.
-- **Dependencies:** P5-T9.
+- **Prerequisites:** P5-T9.
 - **Files:** `apps/api/src/app/inference/adapter.py`, `apps/api/src/app/main.py`*, `apps/api/tests/test_inference_adapter.py`.
 - **Steps:** Add startup loading, the one-reply lock, and `GET /ready`.
 - **Acceptance:** A missing model doesn't crash the server, and readiness reports it. A test checkpoint loads.
@@ -465,7 +465,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T11: Chat endpoint and SSE streaming
 
 - **Objective:** Stream a reply, and save it.
-- **Dependencies:** P5-T10.
+- **Prerequisites:** P5-T10.
 - **Files:** `apps/api/src/app/modules/chat/`, `apps/api/src/app/inference/adapter.py`*, `apps/api/src/app/main.py`*, `apps/api/tests/test_chat.py`.
 - **Steps:** Add the route, worker thread, queue, `fastapi.sse` events, and two short transactions.
 - **Acceptance:** Events arrive in order, and both messages are saved. No database connection is held during generation.
@@ -475,7 +475,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T12: Cancellation
 
 - **Objective:** Stop generating on disconnect.
-- **Dependencies:** P5-T11.
+- **Prerequisites:** P5-T11.
 - **Files:** `apps/api/src/app/modules/chat/`*, `apps/api/src/app/inference/adapter.py`*, `apps/api/tests/test_cancellation.py`.
 - **Steps:** Connect the disconnect to `stop_event`, and save the partial reply.
 - **Acceptance:** A real server test shows that generation stops, the reply is `stopped`, and the model is free. If `fastapi.sse` fails, stop and ask before adding a package.
@@ -485,7 +485,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T13: Generation settings
 
 - **Objective:** Accept per-message settings.
-- **Dependencies:** P5-T12.
+- **Prerequisites:** P5-T12.
 - **Files:** `apps/api/src/app/modules/chat/`*, `apps/api/tests/test_chat.py`*.
 - **Steps:** Validate settings against the published limits, and pass them to the engine.
 - **Acceptance:** Values at and beyond each limit are tested.
@@ -495,7 +495,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T14: Error handling
 
 - **Objective:** Make every failure clear and safe.
-- **Dependencies:** P5-T13.
+- **Prerequisites:** P5-T13.
 - **Files:** `apps/api/src/app/core/exceptions.py`*, `apps/api/src/app/modules/chat/`*, `apps/api/src/app/core/database.py`*, `apps/api/tests/test_errors.py`*.
 - **Steps:** Add busy, no model, database failure, generation failure, and timeout handling.
 - **Acceptance:** Each documented error is tested, and the model is always released.
@@ -505,7 +505,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T15: Structured logging
 
 - **Objective:** Make the server's behaviour traceable.
-- **Dependencies:** P5-T14.
+- **Prerequisites:** P5-T14.
 - **Files:** `apps/api/src/app/core/logging.py`, `apps/api/src/app/main.py`*, `apps/api/tests/test_logging.py`, `apps/api/pyproject.toml`*, `uv.lock`*.
 - **Steps:** Add `structlog`, request IDs, and request logs.
 - **Acceptance:** A response and its logs share an ID. A test confirms that prompts aren't logged.
@@ -515,7 +515,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T16: Security and shutdown
 
 - **Objective:** Apply the security plan and clean shutdown.
-- **Dependencies:** P5-T15.
+- **Prerequisites:** P5-T15.
 - **Files:** `apps/api/src/app/core/security.py`, `apps/api/src/app/main.py`*, `apps/api/tests/test_security.py`.
 - **Steps:** Add CORS, security headers, and graceful shutdown.
 - **Acceptance:** The allowed origin works, others are refused, and headers are present. Shutdown saves a partial reply.
@@ -525,7 +525,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T17: Test coverage and boundaries
 
 - **Objective:** Fill important test gaps.
-- **Dependencies:** P5-T16.
+- **Prerequisites:** P5-T16.
 - **Files:** `apps/api/tests/`, `apps/api/pyproject.toml`*, `uv.lock`*.
 - **Steps:** Add `pytest-cov` and the import-rule test, then cover missing critical paths.
 - **Acceptance:** Breaking an import rule fails the test. Coverage is reported as measured, with no invented target.
@@ -535,7 +535,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T18: Performance checks
 
 - **Objective:** Measure the real backend.
-- **Dependencies:** P5-T17.
+- **Prerequisites:** P5-T17.
 - **Files:** `apps/api/src/app/main.py`*, `apps/api/pyproject.toml`*, `uv.lock`*, `docs/BACKEND.md`*.
 - **Steps:** Add local `/metrics`. Measure time to first token, tokens per second, and memory.
 - **Acceptance:** Real numbers are recorded, and no target is claimed without a measurement.
@@ -545,7 +545,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T19: Docker setup
 
 - **Objective:** Offer a repeatable PostgreSQL.
-- **Dependencies:** P5-T18.
+- **Prerequisites:** P5-T18.
 - **Files:** `compose.yaml`, `.env.example`*, `docs/BACKEND.md`*.
 - **Steps:** Start Docker, and add one PostgreSQL service on a separate port, with a named volume.
 - **Acceptance:** Migrations and tests pass against it, while local PostgreSQL stays untouched.
@@ -555,7 +555,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 ### P5-T20: Security scans and pre-commit
 
 - **Objective:** Automate quality checks.
-- **Dependencies:** P5-T19.
+- **Prerequisites:** P5-T19.
 - **Files:** `.pre-commit-config.yaml`, `apps/api/pyproject.toml`*, `uv.lock`*.
 - **Steps:** Add `bandit`, `pip-audit`, and `pre-commit`, with `ruff` and `mypy`. Explain each finding.
 - **Acceptance:** Scans ran, and their real findings are fixed or recorded.

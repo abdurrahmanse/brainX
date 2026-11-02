@@ -162,7 +162,7 @@ Details are in [BACKEND.md](BACKEND.md#tasks).
 
 | ID | Task | New packages |
 |---|---|---|
-| P5-T1 | FastAPI setup | `fastapi`, `uvicorn`, `pytest`, `httpx`, `ruff`, `mypy` |
+| P5-T1 | FastAPI setup | `fastapi`, `uvicorn`, `httpx`, `ruff`, `mypy` (`pytest` is already installed in P1-T6) |
 | P5-T2 | Configuration | `pydantic-settings` |
 | P5-T3 | PostgreSQL setup | None |
 | P5-T4 | Async ORM | `sqlalchemy[asyncio]`, `asyncpg`, `pytest-asyncio` |
@@ -216,6 +216,58 @@ Phase 6 connects the UI to the backend, and this phase proves the whole product 
 | P7-T2 | Test every failure from the browser | `apps/web/`*, `apps/api/`* for approved fixes | Busy, no model, server down, and database down each show the right message |
 | P7-T3 | Add essential Playwright tests | `apps/web/e2e/`, `apps/web/playwright.config.ts`, `apps/web/package.json`* | Send, stream, stop, and reload pass using a small test checkpoint |
 
+### Details for P7-T1 to P7-T3
+
+Phase 6 connects the UI to the backend. These tasks prove the whole product works together. Use the dev scripts created in P5-T1 and P6-T1, and confirm the exact commands in the repo before running them.
+
+#### P7-T1: Test the full chat with the real model
+
+- **Objective:** Check the whole product end to end with the real trained model, and record what happens.
+- **Prerequisites:** P6-T16.
+- **Files:** `docs/PROGRESS.md`* only.
+- **Packages:** None.
+- **Steps:**
+  1. Start PostgreSQL, apply the migrations, set `BRAINX_CHECKPOINT` to the exported model folder, and start the API and the web app.
+  2. In the browser, walk through this script and write down what you actually see at each step: create a new chat; send a message and watch it stream; press Stop mid-reply and check the partial text stays; send a follow-up and check it uses the earlier message; reload and check the history is still there; restart the API and check again; delete a conversation; change a generation setting and check it reaches the API.
+  3. Record time to first token and tokens per second from `/metrics` or the logs, as measured values.
+  4. Note every bug or surprise. Do not fix anything in this task.
+- **Acceptance:** Every step of the script has a recorded result (works, fails, or odd) written from what was seen. Any number comes from real output.
+- **Verify:** `curl http://127.0.0.1:8000/api/v1/ready`, the browser script above, then `uv run --package brainx-api pytest apps/api/tests` and `pnpm test`
+- **Learning:** How the parts behave when they run together, and why a written test script finds problems that unit tests miss.
+
+#### P7-T2: Test every failure from the browser
+
+- **Objective:** Check that each documented failure shows the right message and leaves the app usable.
+- **Prerequisites:** P7-T1.
+- **Files:** `docs/PROGRESS.md`*. `apps/web/`* and `apps/api/`* only for fixes the owner approves.
+- **Packages:** None.
+- **Steps:** Cause each failure below, read what the UI shows, and compare it with [BACKEND.md](BACKEND.md#errors) and [DESIGN.md](DESIGN.md):
+  1. Busy: send a message from a second browser tab while a reply is generating.
+  2. No model: start the API without `BRAINX_CHECKPOINT`.
+  3. API down: stop the API, then start it again.
+  4. Database down: stop PostgreSQL, then start it again.
+  5. Settings out of range: check that the UI never lets you send them.
+  6. Blocked storage: block site data for `localhost`, and check that chat still works with default settings.
+  7. Delete a chat while its reply is generating.
+- **Acceptance:** Each case shows the documented message and the app stays usable. After the problem is fixed, the next message works, so the model was released. Every failure found is listed; a fix is made only with approval and a new test.
+- **Verify:** The cases above, then `uv run --package brainx-api pytest apps/api/tests` and `pnpm test`
+- **Learning:** Why error paths need testing as much as the normal path.
+
+#### P7-T3: Add essential Playwright tests
+
+- **Objective:** Automate the most important browser flow.
+- **Prerequisites:** P7-T2.
+- **Files:** `apps/web/e2e/`, `apps/web/playwright.config.ts`, `apps/web/package.json`*, `pnpm-lock.yaml`*.
+- **Packages:** `@playwright/test` 1.64.1, with approval via `/brainx-package`. Playwright also downloads a browser, which needs its own approval and network access.
+- **Steps:**
+  1. Add the package, then download one browser (Chromium) with Playwright's own install command.
+  2. Write a script that creates a tiny, randomly initialised model artifact from the model code, so the tests need no real training. Keep it under `model/outputs/`, out of git.
+  3. Configure Playwright to start the API (with that artifact and the `brainx_test` database) and the web app.
+  4. Write tests for: send a message and see streamed text; stop a reply and keep the partial text; reload and see the history; delete a conversation. Add a `test:e2e` script.
+- **Acceptance:** The tests pass three runs in a row, and they use only the tiny model and the test database, never your real data.
+- **Verify:** `pnpm --filter web test:e2e`
+- **Learning:** What an end-to-end test covers that component tests cannot, and why the tests use a tiny model.
+
 ## Phase 8: Final Testing
 
 | ID | Task | Files | Done when |
@@ -225,6 +277,82 @@ Phase 6 connects the UI to the backend, and this phase proves the whole product 
 | P8-T3 | Final UI review with the owner | `apps/web/`* | Owner approves the look |
 | P8-T4 | Finish the README | `README.md`* | A clean clone can follow it, and results are real |
 | P8-T5 | Prepare the portfolio demo | `README.md`*, `docs/` | Screenshots and a short demo script exist |
+
+### Details for P8-T1 to P8-T5
+
+#### P8-T1: Run all tests and fix found bugs
+
+- **Objective:** Make every check pass, and deal with the bugs found in Phase 7.
+- **Prerequisites:** P7-T3.
+- **Files:** `docs/PROGRESS.md`*. Other files only for bugs the owner approves.
+- **Packages:** None.
+- **Steps:**
+  1. Run every check in Verify, and list each failure together with the Phase 7 bugs in a table: symptom, cause, proposed fix.
+  2. The owner picks which to fix.
+  3. Fix one at a time, each with a test that failed before and passes after.
+  4. Run all checks again.
+- **Acceptance:** All checks pass, or each remaining failure is listed with its reason and the owner's decision. Nothing outside the approved bugs changed.
+- **Verify:** `pnpm lint`, `pnpm check-types`, `pnpm build`, `pnpm test`, `uv run --package brainx-model pytest model/tests`, `uv run --package brainx-api pytest apps/api/tests`, `pnpm --filter web test:e2e`
+- **Learning:** How to triage bugs, and why a fix needs a test that failed first.
+
+#### P8-T2: Test offline
+
+- **Objective:** Show that the app works with no internet.
+- **Prerequisites:** P8-T1.
+- **Files:** `docs/PROGRESS.md`*.
+- **Packages:** None.
+- **Steps:**
+  1. With everything installed and the model exported, turn Wi-Fi off.
+  2. Start PostgreSQL, the API, and the web app, then run the P7-T1 script.
+  3. In the browser's Network tab, check that every request goes to `localhost`, and list any that tries to reach the internet (fonts, scripts, images).
+  4. Turn Wi-Fi back on.
+- **Acceptance:** The whole script works offline, and the Network tab shows only local requests. Any outside request is listed, and fixed only with approval.
+- **Verify:** `curl http://127.0.0.1:8000/api/v1/ready` with the network off, then the browser script
+- **Learning:** What local-first means in practice, and how to inspect network requests.
+
+#### P8-T3: Final UI review
+
+- **Objective:** The owner reviews the finished UI against [DESIGN.md](DESIGN.md) and decides what to change.
+- **Prerequisites:** P8-T2.
+- **Files:** `apps/web/`* only for changes the owner approves.
+- **Packages:** None.
+- **Steps:**
+  1. Open the app at 375px, 768px, and 1280px, in light and dark.
+  2. Check it against DESIGN.md: colours, type, borders, every component state, keyboard shortcuts, focus outline, and reduced motion.
+  3. The owner lists the changes wanted.
+  4. Make only those, one at a time.
+- **Acceptance:** The owner says they approve the look, and each change traces to their list.
+- **Verify:** `pnpm lint`, `pnpm check-types`, `pnpm test`, `pnpm build`, then the manual review
+- **Learning:** How to review a UI against written rules instead of by feeling.
+
+#### P8-T4: Finish the README
+
+- **Objective:** Someone new can set up and run the project from the README alone.
+- **Prerequisites:** P8-T3.
+- **Files:** `README.md`*.
+- **Packages:** None.
+- **Steps:**
+  1. Write these sections: what it is, requirements with versions, setup, how to prepare data and train, how to run, results with limits, an architecture diagram, and troubleshooting.
+  2. Copy every command from one that was actually run. Take every number from a run folder.
+  3. Clone the repo into a new empty folder and follow only the README.
+- **Acceptance:** The clean-clone run works, or the README is fixed until it does. Every number traces to a run folder or real command output.
+- **Verify:** `git clone <this repo> <new empty folder>`, then follow the README step by step
+- **Learning:** Why writing for a stranger finds the steps you forgot.
+
+#### P8-T5: Prepare the portfolio demo
+
+- **Objective:** Make the project easy to present.
+- **Prerequisites:** P8-T4.
+- **Files:** `README.md`*, `docs/DEMO.md`.
+- **Packages:** None.
+- **Steps:**
+  1. Take screenshots of the real app: light, dark, and mobile.
+  2. Write a 60 to 90 second demo script in `docs/DEMO.md`.
+  3. Add a model card to the README: size, data and licences, training time, results, and limits.
+  4. Add a short "what I learned" section in the owner's own words.
+- **Acceptance:** The files exist, the screenshots show the real app, every number traces to a run folder, and the limits are stated honestly.
+- **Verify:** Open each file, and trace each number to its source
+- **Learning:** How to present a project honestly, including what it cannot do.
 
 ## Setup work outside the numbered tasks
 

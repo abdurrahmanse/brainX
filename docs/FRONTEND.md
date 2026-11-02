@@ -8,7 +8,9 @@ Phase 6 starts only after the model milestone and Phase 5, so the UI connects to
 
 Versions were checked on 2026-11-02.
 
-**Compatibility test:** in a temporary project, every package below was installed with Next.js 16.3.8, React 19.2.8, and TypeScript 7.0.2. A test page imported them, and `next build` and strict `tsc --noEmit` both passed.
+**Compatibility test:** in a temporary project, every package below except the `shadcn` CLI was installed (only its `--version` and `init --help` were run) with Next.js 16.3.8, React 19.2.8, and TypeScript 7.0.2. A test page imported them, and `next build` and strict `tsc --noEmit` both passed.
+
+Versions are the ones the test installed; the registry listed 5.105.1 and 4.16.1 at the time for two of them, so confirm the exact version when installing.
 
 **Not tested yet:** running them in a browser, Tailwind styles, `shadcn init`, Vitest, and Playwright. The task that adds each one must confirm it works.
 
@@ -25,7 +27,7 @@ Each package is added only in its task, after approval.
 | `shiki` | 4.5.0 | Code highlighting | P6-T9 |
 | `next-themes` | 0.4.6 | Light and dark themes with no flash on load | P6-T10 |
 | `sonner` | 2.0.8 | Toast notifications | P6-T11 |
-| `@tanstack/react-query` | 5.105.1 | Conversations and messages from the API | P6-T12 |
+| `@tanstack/react-query` | 5.105.0 | Conversations and messages from the API | P6-T12 |
 | `zustand` | 5.0.16 | Settings saved in the browser | P6-T13 |
 | `motion` | 14.9.0 | Small transitions that CSS can't handle well | P6-T14 |
 | `@playwright/test` | 1.64.1 | Essential browser tests | P7-T3 |
@@ -37,7 +39,7 @@ Each package is added only in its task, after approval.
 | Package | Version | Add only if | Why it starts out unused |
 |---|---|---|---|
 | `react-hook-form`, `zod`, `@hookform/resolvers` | 7.91.0, 4.6.7, 7.0.1 | Settings become a complex form | The basic panel has four number fields and a theme choice |
-| `react-resizable-panels` | 4.16.1 | The collapsible sidebar isn't enough | It's optional, and a collapsible sidebar covers the requirement |
+| `react-resizable-panels` | 4.16.0 | The collapsible sidebar isn't enough | It's optional, and a collapsible sidebar covers the requirement |
 
 ## Before adding any package
 
@@ -103,6 +105,15 @@ If `localStorage` is blocked or full, chat must keep working with default settin
 | `/` | Focus the message box, when not already typing |
 | `Cmd/Ctrl+B` | Show or hide the sidebar |
 
+## Configuration
+
+| Setting | Default | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://127.0.0.1:8000/api/v1` | Where the browser finds the API ([BACKEND.md](BACKEND.md#api)). Set it in `apps/web/.env.local`, and commit an `apps/web/.env.example`. |
+
+- `apps/web/.gitignore` contains `.env*`, which would also ignore `.env.example`. P6-T11 adds `!.env.example` to it.
+- The API allows only the origin `http://localhost:3000`, so open the app at `localhost:3000`, not `127.0.0.1:3000`.
+
 ## Tasks
 
 Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-types`, and `build` as part of testing.
@@ -110,7 +121,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T1: Frontend environment setup
 
 - **Purpose:** Prepare a clean base with tests, so later work can be checked.
-- **Dependencies:** Vitest and Testing Library packages listed above.
+- **Prerequisites:** P5-T20 (Phase 5 is finished, so the backend exists).
+- **Packages:** Vitest and Testing Library packages listed above.
 - **Files:** `apps/web/src/app/`, `apps/web/package.json`, `apps/web/tsconfig.json`, `apps/web/vitest.config.ts`.
 - **Instructions:** Move `app/` to `src/app/`, replace the starter page with a plain heading, confirm strict TypeScript is on, and add a `test` script.
 - **Acceptance:** The page shows the heading, and one sample test passes.
@@ -119,7 +131,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T2: Tailwind and design tokens
 
 - **Purpose:** Keep colours, type, and spacing in one place.
-- **Dependencies:** `tailwindcss`, `@tailwindcss/postcss`.
+- **Prerequisites:** P6-T1.
+- **Packages:** `tailwindcss`, `@tailwindcss/postcss`.
 - **Files:** `apps/web/postcss.config.mjs`, `apps/web/src/styles/globals.css`, `apps/web/src/app/layout.tsx`.
 - **Instructions:** Add Tailwind, then define every token in [DESIGN.md](DESIGN.md) for light and dark. Load Geist from the local font files.
 - **Acceptance:** Text and borders use tokens, and both system themes show correctly.
@@ -128,7 +141,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T3: shadcn/ui configuration
 
 - **Purpose:** Get accessible base components that we can restyle.
-- **Dependencies:** `shadcn` CLI, `radix-ui`, `lucide-react`, plus any helpers it lists.
+- **Prerequisites:** P6-T2.
+- **Packages:** `shadcn` CLI, `radix-ui`, `lucide-react`, plus any helpers it lists.
 - **Files:** `apps/web/components.json`, `apps/web/src/components/ui/`, `apps/web/src/lib/utils.ts`, `apps/web/package.json`.
 - **Instructions:** Check the CLI's monorepo and Tailwind 4 behaviour first. Run `init` with `--base radix`, then add only `button`. Restyle it to match DESIGN.md.
 - **Acceptance:** Button matches every state in DESIGN.md, using Radix and not Base UI.
@@ -137,7 +151,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T4: Application shell
 
 - **Purpose:** Create the page frame that holds everything.
-- **Dependencies:** None new.
+- **Prerequisites:** P6-T3.
+- **Packages:** None new.
 - **Files:** `apps/web/src/components/layout/`, `apps/web/src/app/page.tsx`.
 - **Instructions:** Build the header, sidebar area, message area, and composer area. Add the small-model notice and the empty conversation state.
 - **Acceptance:** Matches the DESIGN.md layout, and the notice is always visible.
@@ -146,7 +161,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T5: Sidebar and navigation
 
 - **Purpose:** Give the conversation list a home and support collapsing.
-- **Dependencies:** shadcn `sidebar`, if it fits; otherwise a simple component.
+- **Prerequisites:** P6-T4.
+- **Packages:** shadcn `sidebar`, if it fits; otherwise a simple component.
 - **Files:** `apps/web/src/components/layout/`, `apps/web/src/components/ui/`.
 - **Instructions:** Add a collapsible sidebar with a **New chat** button and placeholder list. Add `Cmd/Ctrl+B`.
 - **Acceptance:** The sidebar opens and closes by mouse and keyboard.
@@ -155,7 +171,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T6: Chat message components
 
 - **Purpose:** Show user and assistant messages.
-- **Dependencies:** None new.
+- **Prerequisites:** P6-T5.
+- **Packages:** None new.
 - **Files:** `apps/web/src/components/chat/`, `apps/web/src/types/`.
 - **Instructions:** Build the message list and both message types, using sample data for each state: streaming, complete, stopped, failed. Add the **Copy** button.
 - **Acceptance:** Each state matches DESIGN.md, and Copy puts the full text on the clipboard.
@@ -164,7 +181,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T7: Prompt composer
 
 - **Purpose:** Let the user write and send a message.
-- **Dependencies:** None new.
+- **Prerequisites:** P6-T6.
+- **Packages:** None new.
 - **Files:** `apps/web/src/components/chat/`.
 - **Instructions:** Build an auto-resizing textarea with a maximum height, plus Send and Stop buttons. Add `Enter`, `Shift+Enter`, `Esc`, and `/`.
 - **Acceptance:** Empty messages can't be sent, and Send becomes Stop while streaming.
@@ -173,7 +191,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T8: Markdown rendering
 
 - **Purpose:** Format assistant replies.
-- **Dependencies:** `react-markdown`, `remark-gfm`.
+- **Prerequisites:** P6-T7.
+- **Packages:** `react-markdown`, `remark-gfm`.
 - **Files:** `apps/web/src/components/chat/`.
 - **Instructions:** Render assistant messages as Markdown and style each element with tokens. Don't enable raw HTML. Render links as plain text, so that invented links can't be clicked.
 - **Acceptance:** Lists, tables, and code display correctly. HTML in a reply appears as harmless text.
@@ -182,7 +201,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T9: Code highlighting
 
 - **Purpose:** Make code blocks readable.
-- **Dependencies:** `shiki`.
+- **Prerequisites:** P6-T8.
+- **Packages:** `shiki`.
 - **Files:** `apps/web/src/components/chat/`.
 - **Instructions:** Build the code block with language label and Copy. Load Shiki on first use, and highlight only finished replies. Choose light and dark themes that meet the contrast rule.
 - **Acceptance:** Code shows plain, then highlighted. An unknown language stays plain without an error. Code containing HTML appears as text.
@@ -191,7 +211,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T10: Theme management
 
 - **Purpose:** Let the user choose a theme.
-- **Dependencies:** `next-themes`.
+- **Prerequisites:** P6-T9.
+- **Packages:** `next-themes`.
 - **Files:** `apps/web/src/app/`, `apps/web/src/components/layout/`, `apps/web/src/styles/globals.css`.
 - **Instructions:** Support System, Light, and Dark, with System as the default, and add a control to the header.
 - **Acceptance:** The choice survives a reload, with no flash of the wrong theme.
@@ -200,16 +221,18 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T11: Streaming UI integration
 
 - **Purpose:** Connect the UI to the real model.
-- **Dependencies:** `sonner`.
-- **Files:** `apps/web/src/lib/`, `apps/web/src/features/chat/`, `apps/web/src/components/ui/`, `apps/web/src/app/`.
-- **Instructions:** Write the API client and stream reader. Stream replies into the message list, with Stop aborting the request. Show errors as toasts and inline notices.
+- **Prerequisites:** P6-T10, and the backend streaming API (P5-T11, P5-T12).
+- **Packages:** `sonner`.
+- **Files:** `apps/web/src/lib/`, `apps/web/src/features/chat/`, `apps/web/src/components/ui/`, `apps/web/src/app/`, `apps/web/.env.example`, `apps/web/.gitignore`*.
+- **Instructions:** Write the API client and stream reader. Read the API address from `NEXT_PUBLIC_API_URL` (see Configuration above). Handle the four stream events `start`, `delta`, `done`, and `error` described in [BACKEND.md](BACKEND.md#stream-events). Write the request and response types by hand in `src/types` (no generator: `openapi-typescript` needs TypeScript 5 and this repo uses 7), then compare them once with the fields in the API's `/openapi.json`. Stream replies into the message list, with Stop aborting the request. Show errors as toasts and inline notices.
 - **Acceptance:** A reply streams from the real backend, and Stop keeps the partial text. Errors for busy, no model, and server down are clear.
 - **Testing:** Test the stream reader with events split across chunks. Try each error by hand.
 
 ### P6-T12: Conversation state
 
 - **Purpose:** Show, reopen, and delete saved conversations.
-- **Dependencies:** `@tanstack/react-query`.
+- **Prerequisites:** P6-T11, and the conversation API (P5-T8, P5-T9).
+- **Packages:** `@tanstack/react-query`.
 - **Files:** `apps/web/src/app/`, `apps/web/src/features/conversations/`, `apps/web/src/features/chat/`, `apps/web/src/lib/`.
 - **Instructions:** Add the query provider. Connect New chat, the list, opening a chat, its messages, and delete to the API. Refresh the data after a reply finishes. Don't copy server data into another store.
 - **Acceptance:** Conversations survive a reload and server restart. Follow-up replies use earlier messages. Delete asks for confirmation.
@@ -218,7 +241,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T13: Settings interface
 
 - **Purpose:** Let the user change theme and generation settings.
-- **Dependencies:** `zustand`, shadcn `dialog`.
+- **Prerequisites:** P6-T12, and the readiness and settings API (P5-T10, P5-T13).
+- **Packages:** `zustand`, shadcn `dialog`.
 - **Files:** `apps/web/src/features/settings/`, `apps/web/src/stores/`, `apps/web/src/components/ui/`.
 - **Instructions:** Build a dialog for temperature, top-k, top-p, and max reply length, with a reset. Read defaults and limits from `GET /api/v1/ready`, and send the values with each message.
 - **Acceptance:** Settings survive a reload and reach the API. Out-of-range values can't be saved. Blocked storage doesn't break chat.
@@ -227,7 +251,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T14: Responsive design
 
 - **Purpose:** Work well on phones and desktops.
-- **Dependencies:** `motion`, only if CSS can't handle a needed transition.
+- **Prerequisites:** P6-T13.
+- **Packages:** `motion`, only if CSS can't handle a needed transition.
 - **Files:** `apps/web/src/components/layout/`, `apps/web/src/components/chat/`.
 - **Instructions:** Make the sidebar a slide-over panel on small screens, and keep the composer usable. Add subtle transitions under the DESIGN.md motion rules.
 - **Acceptance:** No sideways scrolling at 375px. Motion is removed under `prefers-reduced-motion`.
@@ -236,7 +261,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T15: Accessibility
 
 - **Purpose:** Make every action usable by keyboard and screen reader.
-- **Dependencies:** None new.
+- **Prerequisites:** P6-T14.
+- **Packages:** None new.
 - **Files:** `apps/web/src/components/`, `apps/web/src/features/`.
 - **Instructions:** Review labels, focus order, dialog focus trapping, live regions, and contrast against DESIGN.md. Fix what fails.
 - **Acceptance:** A full chat, including settings and sidebar, works without a mouse.
@@ -245,7 +271,8 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T16: UI testing and final polish
 
 - **Purpose:** Catch gaps before integration.
-- **Dependencies:** None new.
+- **Prerequisites:** P6-T15.
+- **Packages:** None new.
 - **Files:** Existing `apps/web/src/` files, plus their tests.
 - **Instructions:** Fill test gaps for critical behaviour, and make all loading, empty, and error states consistent. Remove unused components and packages.
 - **Acceptance:** All tests pass, and every package in `package.json` is used.

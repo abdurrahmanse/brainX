@@ -41,7 +41,7 @@ All sizes used 8,000 tokens. Size M used about 5.5 GB of GPU memory at the momen
 
 ## Folder structure
 
-This structure exists as empty placeholders, created at the owner's request (the one exception to "create files only in their task"). Each file gets its content only in the task that needs it. Not created yet: `model/src/__init__.py` (P1-T6), `model/eval_prompts.jsonl` (P3-T8), and the `tests/` files.
+This structure exists as empty placeholders, created at the owner's request (the one exception to "create files only in their task"). Each file gets its content only in the task that needs it. Not created yet: `model/src/__init__.py` (P1-T6), `model/configs/eval_prompts.jsonl` (P3-T8), and the `tests/` files.
 
 ```text
 model/
@@ -178,6 +178,8 @@ These are starting values to test, and they live in `configs/training.yaml`.
 - **Bad loss:** stop if the loss becomes NaN.
 - **Sleep:** run long jobs with `caffeinate -i`.
 
+**Where files go:** training checkpoints are saved in `model/checkpoints/<run-name>/`, run records in `model/outputs/runs/<run-name>/`, and the exported model for the backend in `model/checkpoints/export/`. All three are ignored by git.
+
 **Experiment tracking:** each run gets `model/outputs/runs/<name>/` with its config, seed, git commit, dataset hashes, `metrics.jsonl`, and sample outputs. MPS results may still differ slightly between runs.
 
 **Distributed training:** not used, because there's one machine.
@@ -221,7 +223,7 @@ Measured results and subjective observations are reported separately.
 
 **Correctness checks before training:** starting loss near ln(8000) ≈ 8.99, and one small batch can overfit.
 
-**Fixed prompts:** write about 30 in `model/eval_prompts.jsonl` before the full run, covering text generation, basic questions, and short conversations. Save raw outputs, so that every score can be checked.
+**Fixed prompts:** write about 30 in `model/configs/eval_prompts.jsonl` before the full run, covering text generation, basic questions, and short conversations. Save raw outputs, so that every score can be checked.
 
 **Comparison:** run the bigram baseline, the pre-trained model, and the fine-tuned model with the same prompts, seed, and default settings. Pass thresholds are set after the first real result, then kept fixed.
 
@@ -367,7 +369,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 - **Packages:** None.
 - **Steps:** Train on a sample, report the time taken, analyse token lengths, and write memory-mapped files.
 - **Acceptance:** Vocabulary has 8,000 tokens, and decoding a slice returns the source text.
-- **Verify:** Execute notebook 03 as in P2-T5.
+- **Verify:** `uv run --package brainx-model jupyter nbconvert --to notebook --execute model/notebooks/03_tokenizer.ipynb --output-dir model/outputs/executed`
 - **Learning:** Why token files make training faster.
 
 ### P3-T1: Model architecture selection
@@ -378,7 +380,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 - **Packages:** None.
 - **Steps:** Explain embeddings, attention, feed-forward layers, and normalisation. Calculate parameters for the chosen size.
 - **Acceptance:** The owner approves the final values.
-- **Verify:** Execute notebook 04 as in P2-T5.
+- **Verify:** `uv run --package brainx-model jupyter nbconvert --to notebook --execute model/notebooks/04_model_architecture.ipynb --output-dir model/outputs/executed`
 - **Learning:** What each part of a Transformer does.
 
 ### P3-T2: Model implementation
@@ -451,7 +453,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 
 - **Objective:** Write the test questions before seeing full results.
 - **Prerequisites:** P3-T7.
-- **Files:** `model/eval_prompts.jsonl`.
+- **Files:** `model/configs/eval_prompts.jsonl`.
 - **Packages:** None.
 - **Steps:** Write about 30 prompts, not taken from training data.
 - **Acceptance:** All three categories are covered.
@@ -541,7 +543,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 - **Prerequisites:** P4-T4.
 - **Files:** `model/src/evaluate.py`*, `model/tests/test_evaluate.py`*, `model/notebooks/06_model_evaluation.ipynb`*, `docs/MODEL.md`*.
 - **Packages:** None.
-- **Steps:** Compare the bigram baseline, pre-trained model, and fine-tuned model, then select a checkpoint and set thresholds.
+- **Steps:** Write the bigram baseline in `evaluate.py` (count how often each token follows another in the training tokens, with add-one smoothing) and test it on a tiny corpus against hand-calculated values. Then compare the baseline, pre-trained model, and fine-tuned model, select a checkpoint, and set thresholds.
 - **Acceptance:** The table uses real runs. If a stage doesn't help, report that plainly.
 - **Verify:** Owner reviews the table and raw outputs.
 - **Learning:** Why a baseline gives a score meaning.
@@ -554,7 +556,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 - **Packages:** None.
 - **Steps:** Test settings, stopping, and multi-turn chat in English. Compare CPU and MPS speed and memory on real weights. Freeze defaults.
 - **Acceptance:** Real numbers are recorded, and the device choice is confirmed or updated.
-- **Verify:** Execute notebook 07 as in P2-T5.
+- **Verify:** `uv run --package brainx-model jupyter nbconvert --to notebook --execute model/notebooks/07_inference_testing.ipynb --output-dir model/outputs/executed`
 - **Learning:** Why a GPU isn't always faster for one stream.
 
 ### P4-T7: Model artifact export
@@ -563,7 +565,7 @@ Each task needs approval first. Run commands from the repo root, once P1-T6 has 
 - **Prerequisites:** P4-T6.
 - **Files:** `model/src/inference.py`*, `model/tests/test_inference.py`*.
 - **Packages:** `safetensors`, only if approved here.
-- **Steps:** Export weights, tokenizer, config, default settings, and a manifest.
+- **Steps:** Export weights, tokenizer, config, default settings, and a manifest into `model/checkpoints/export/`, which `BRAINX_CHECKPOINT` points to.
 - **Acceptance:** A fresh process loads the artifact and generates text with the network off.
 - **Verify:** `uv run --package brainx-model pytest model/tests/test_inference.py`
 - **Learning:** What makes a model portable.

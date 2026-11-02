@@ -224,3 +224,32 @@ Before P1-T3, fix items 1 to 3 in Section 9 (about five files). The remaining it
 - Items 9 to 11 before Phase 8.
 
 Docs written without any code to test against will drift. Each phase's gate should therefore re-run this audit's checks, which are quick.
+
+## Follow-up status (2026-11-02, after fixes)
+
+This section was added after the audit above. The scores in Section 3 come from the original audit and were **not recomputed**. Each item below was checked by re-reading the changed files and running the same link, task-ID, and prerequisite checks.
+
+| Item | Status | What changed |
+|---|---|---|
+| C1 `PROGRESS.md` stale | Resolved | Rename recorded as committed; frozen install flagged as unrun |
+| C2 Folder rule against `model/` | Resolved | `model/` recorded as an approved exception in four files |
+| C3 Phase 1 specs | Resolved | P1-T3 to P1-T6 specified; P7-T1 to P8-T5 specified too |
+| A1 Rule conflict | Resolved | Same as C2 |
+| A2 `pytest` installed twice | Resolved | Installed once, in P1-T6 |
+| A3 scikit-learn and Hugging Face libraries | **Open** | Owner decision; `docs/MODEL.md` still marks scikit-learn "Not needed" |
+| M1 Prerequisite fields differ | Resolved | Every task in `docs/BACKEND.md` and `docs/FRONTEND.md` now has "Prerequisites"; frontend "Dependencies" renamed "Packages" |
+| M2 Bigram baseline | Resolved | P4-T5 now writes and tests it |
+| M3 `eval_prompts.jsonl` location | Resolved | Moved to `model/configs/eval_prompts.jsonl`, inside your structure |
+| M4 Export location | Resolved | `model/checkpoints/export/`; run files in `model/checkpoints/<run>/` and `model/outputs/runs/<run>/` |
+| M5 `BRAINX_DATABASE_URL_SYNC` | Resolved | Removed; P5-T3 uses `psql -d brainx` |
+| M6 Contrast claim | Resolved | Corrected to "at least 6.9:1" |
+| M7 Frontend test claim and versions | Resolved | `shadcn` CLI exception stated; two versions set to those tested |
+| M8 API base URL | Resolved | `NEXT_PUBLIC_API_URL` documented in `docs/FRONTEND.md` |
+| M9 Type drift | Resolved | One manual comparison with `/openapi.json` added to P6-T11 |
+| M10 SSE events | Resolved | P6-T11 names `start`, `delta`, `done`, and `error` |
+| M11 Verify without commands | Partly resolved | Notebook tasks now have commands; the rest are owner reviews on purpose |
+| M12 Report template | Resolved | "Task report" in `AGENTS.md` |
+| M13 Large tasks | **Open** | A judgement; each task's Explain step can propose a split |
+| Section 9, fixes 10 and 11 | Resolved in part | Requirements added to `README.md`; user workflows, non-functional requirements, and an MVP acceptance map added to `docs/PROJECT.md`. A full setup guide waits for P8-T4, because its commands do not exist yet |
+
+**Still not verified:** the Mermaid diagrams were not rendered, no task's Verify command has run (the code does not exist), and the Claude Code skills, subagents, and guard hook have not been run inside Claude Code.
