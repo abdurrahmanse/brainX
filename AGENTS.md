@@ -86,3 +86,11 @@ Don't start long training runs without approval, and report only real metrics. D
 - Use short examples for hard ideas.
 - Keep explanations short, and show one task at a time.
 - Ask only essential questions.
+
+## Claude Code helpers
+
+These live in `.claude/` and only Claude Code uses them. Codex follows this file alone, so every rule above still applies without them. They help you follow the rules; they do not replace them.
+
+- **Skills** (the owner runs them): `/brainx-task`, `/brainx-verify`, `/brainx-teach`, `/brainx-progress`, `/brainx-package`, `/brainx-train`.
+- **Subagents** (read-only reviewers): `scope-reviewer`, `doc-auditor`.
+- **Hook** (`.claude/hooks/brainx_guard.py`): asks the owner before `git commit`, `git push`, package installs, deleting files, starting training, and staging `model/data`, `model/checkpoints`, or `model/outputs`. It is a safety net that matches command text, not a guarantee. Never edit it, bypass it, or word a command to avoid it without the owner's approval.
