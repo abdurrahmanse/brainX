@@ -225,3 +225,14 @@ Phase 6 connects the UI to the backend, and this phase proves the whole product 
 | P8-T3 | Final UI review with the owner | `apps/web/`* | Owner approves the look |
 | P8-T4 | Finish the README | `README.md`* | A clean clone can follow it, and results are real |
 | P8-T5 | Prepare the portfolio demo | `README.md`*, `docs/` | Screenshots and a short demo script exist |
+
+## Setup work outside the numbered tasks
+
+This work was done before Phase 1 so the agent can follow the workflow in [AGENTS.md](../AGENTS.md).
+
+| Item | Where | Status |
+|---|---|---|
+| Seven skills (`/brainx-task`, `-verify`, `-walkthrough`, `-teach`, `-progress`, `-package`, `-train`) | `.claude/skills/` | Written and committed except `-walkthrough`; not yet run in Claude Code |
+| Two read-only subagents (`scope-reviewer`, `doc-auditor`) | `.claude/agents/` | Written and committed; not yet run |
+| Guard hook for risky commands | `.claude/hooks/brainx_guard.py`, `.claude/settings.json` | Script passed 103 sample commands alone; did not fire in the session that created it |
+| Student guide | [GUIDE.md](GUIDE.md) | Written |

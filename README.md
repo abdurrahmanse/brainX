@@ -33,5 +33,6 @@ It's an educational model, so it will not perform like ChatGPT or Claude, and it
 | [DESIGN.md](docs/DESIGN.md) | UI rules |
 | [TASKS.md](docs/TASKS.md) | Phases and tasks |
 | [PROGRESS.md](docs/PROGRESS.md) | Current status |
+| [GUIDE.md](docs/GUIDE.md) | Student guide: how to work with the agent, step by step (in Bengali) |
 
 Setup instructions will be added once the project can run.
