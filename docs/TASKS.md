@@ -40,7 +40,7 @@ P1-T1 and P1-T2 are done (see [PROGRESS.md](PROGRESS.md)). Commands run from the
 - **Steps:**
   1. Run the four Verify commands one at a time, and record the exit code and key output of each. If the Turborepo TUI (`"ui": "tui"` in `turbo.json`) hides the output, run `pnpm exec turbo run <task> --ui=stream` instead.
   2. Report the points already flagged: a temporary copy once failed with `next: command not found` (cause unknown), and `apps/admin`'s package is still named `docs`.
-  3. For each failure, explain the cause in simple Bengali, or say it is unknown. Do not fix anything yet.
+  3. For each failure, explain the cause in plain English, or say it is unknown. Do not fix anything yet.
   4. Before proposing any change to `turbo.json` or Turborepo commands, read the docs bundled with the installed `turbo` package, as `AGENTS.md` requires.
 - **Acceptance:** All four commands were run in the real repo and each result is recorded as pass or fail with real output. Every failure has a stated cause or is marked unknown. No file changed without approval.
 - **Verify:** `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm lint`, `pnpm check-types`

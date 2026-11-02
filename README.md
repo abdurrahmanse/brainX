@@ -157,7 +157,8 @@ There is nothing to run yet. The setup and run commands will be written as the t
 
 1. Read [PROJECT.md](docs/PROJECT.md) for the goals and scope.
 2. Read [TASKS.md](docs/TASKS.md) for the order of work.
-3. To work on it with Claude Code, read [GUIDE.md](docs/GUIDE.md) (written in Bengali for the author), then run `/brainx-task P1-T4`.
+3. Read [DEVELOPMENT.md](docs/DEVELOPMENT.md) for the complete application and development overview.
+4. To work on it with Claude Code, read [GUIDE.md](docs/GUIDE.md), then run `/brainx-task P1-T4`.
 
 ## Documentation
 
@@ -172,6 +173,7 @@ There is nothing to run yet. The setup and run commands will be written as the t
 | [TASKS.md](docs/TASKS.md) | Every phase and task |
 | [PROGRESS.md](docs/PROGRESS.md) | Current status and open problems |
 | [GUIDE.md](docs/GUIDE.md) | Student guide to working with the agent |
+| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Application overview, real commands, development order, and deployment path |
 | [DOCUMENTATION_AUDIT.md](docs/DOCUMENTATION_AUDIT.md) | A review of how complete the documentation is |
 | [QUALITY.md](docs/QUALITY.md) | Test strategy, performance evidence, GitHub Actions plan, and release gates |
 
