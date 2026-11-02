@@ -1,0 +1,90 @@
+/*
+  brainX design system: the ONE place for colours, fonts and shapes.
+  Both apps (web and admin) import this file, so they always look the same.
+  Values come from docs/DESIGN.md.
+*/
+@import "tailwindcss";
+
+/* Dark mode is switched by a "dark" class on <html> (next-themes adds it). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 1. The colour values. Light is the default, .dark replaces them. */
+:root {
+  --bg: #ffffff;
+  --fg: #000000;
+  --muted: #595959;
+  --accent: #0038ff;
+  --accent-fg: #ffffff;
+  --error: #b00020;
+}
+
+.dark {
+  --bg: #000000;
+  --fg: #ffffff;
+  --muted: #b3b3b3;
+  --accent: #ffe500;
+  --accent-fg: #000000;
+  --error: #ff6b6b;
+}
+
+/* 2. Tell Tailwind about our tokens, so we can write bg-bg, text-fg, bg-accent ... */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-error: var(--error);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --text-page: 1.75rem; /* 28px page title */
+
+  /* Neo-brutalist hard shadows: no blur, just an offset. */
+  --shadow-hard: 4px 4px 0 0 var(--fg);
+  --shadow-hard-sm: 2px 2px 0 0 var(--fg);
+
+  /* The blinking cursor shown while a reply streams. */
+  --animate-blink: blink 1s steps(2, start) infinite;
+  @keyframes blink {
+    to {
+      visibility: hidden;
+    }
+  }
+}
+
+/* 3. Base rules for the whole page. */
+@layer base {
+  body {
+    @apply bg-bg font-sans text-base text-fg antialiased;
+  }
+
+  /* Every border is drawn in the text colour. */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--fg);
+  }
+
+  /* A clear outline for keyboard users. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+}
+
+/* People who ask their system for less motion get none. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./styles.css": "./src/styles.css",
+    "./cn": "./src/cn.ts",
+    "./icons": "./src/icons.ts",
     "./*": "./src/*.tsx"
   },
   "scripts": {
