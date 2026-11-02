@@ -1,0 +1,9 @@
+import type { ComponentProps } from "react";
+import { cn } from "./cn";
+
+export function {{pascalCase name}}({
+  className,
+  ...props
+}: ComponentProps<"div">) {
+  return <div className={cn("", className)} {...props} />;
+}
