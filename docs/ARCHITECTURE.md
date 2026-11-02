@@ -19,12 +19,12 @@ flowchart LR
 
 ## Folders
 
-Folders marked "planned" don't exist yet, and each is created by the task that needs it.
+Folders marked "planned" don't exist yet, and each is created by the task that needs it. `model/` is the exception: it exists with empty placeholder files, created at the owner's request (see [MODEL.md](MODEL.md#folder-structure)).
 
 ```text
 apps/web/             Next.js chat UI (exists as a starter)
 apps/api/             FastAPI server (planned)
-model/                notebooks, src, configs, data, checkpoints, outputs, tests (planned)
+model/                notebooks, src, configs, data, checkpoints, outputs, tests (exists, empty placeholders)
 packages/             shared ESLint and TypeScript settings (exist)
 docs/                 project documentation
 pyproject.toml        uv workspace for apps/api and model (planned)

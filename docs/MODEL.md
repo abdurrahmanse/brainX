@@ -41,7 +41,7 @@ All sizes used 8,000 tokens. Size M used about 5.5 GB of GPU memory at the momen
 
 ## Folder structure
 
-Files are created by the task that needs them, so most of this doesn't exist yet.
+This structure exists as empty placeholders, created at the owner's request (the one exception to "create files only in their task"). Each file gets its content only in the task that needs it. Not created yet: `model/src/__init__.py` (P1-T6), `model/eval_prompts.jsonl` (P3-T8), and the `tests/` files.
 
 ```text
 model/

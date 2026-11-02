@@ -58,7 +58,7 @@ brainX is a student's portfolio chatbot. Act as a patient coding mentor, not an 
 - Delete existing work without permission.
 - Use external AI inference APIs or pre-trained model weights.
 - Commit or push unless asked. When asked, stage named files only.
-- Create files or folders before the task that needs them.
+- Create files or folders before the task that needs them. The one approved exception is the empty `model/` structure the owner asked for on 2026-11-02; fill its files only in their tasks.
 - Send data to an outside service, such as Sentry, without explicit approval.
 
 ## Before adding a package

@@ -33,7 +33,7 @@ All other tasks in [TASKS.md](TASKS.md) have not started.
 - Train from scratch (approach A).
 - Dataset plan and ML package plan in `docs/MODEL.md`.
 - Backend plan and PostgreSQL in `docs/BACKEND.md`.
-- Folders are created by the task that needs them.
+- Folders are created by the task that needs them. One approved exception: the owner asked for the `model/` structure up front (committed in `abbf5f1`), so its seven notebooks, six `.py` files, `training.yaml`, and `pyproject.toml` exist as empty placeholders. They get their content only in their own tasks.
 
 ## Training results
 
