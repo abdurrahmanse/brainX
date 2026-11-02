@@ -36,7 +36,7 @@ Claude-কে লিখুন: "`git commit -h` চালাও"।
 
 **গ. Skill পরীক্ষা**
 
-লিখুন `/brainx-task P1-T3`।
+লিখুন `/brainx-task P1-T4`।
 
 - **ঠিক হলে:** বাংলায় task বুঝিয়ে বলবে, শেষে জিজ্ঞেস করবে "Should I implement this task now?", আর কিছু বদলাবে না।
 - **যাচাই:** তারপর `git status` চালান। কিছু নতুন বদলানো দেখালে সমস্যা আছে।
@@ -132,6 +132,6 @@ git commit -m "..."
 
 1. উপরের **২ নম্বর** পরীক্ষাগুলো করুন।
 2. ফল আমাকে জানান।
-3. তারপর লিখুন `/brainx-task P1-T3`।
+3. তারপর লিখুন `/brainx-task P1-T4`।
 
-`P1-T3`-তে আসল repo-তে `pnpm install --frozen-lockfile`, `build`, `lint` আর `check-types` চালিয়ে দেখা হবে starter ঠিক আছে কি না।
+`P1-T4`-তে unused starter file-এর প্রতিটি deletion-এর জন্য আলাদা অনুমতি লাগে। P1-T3-এর starter checks ইতিমধ্যে real repo-তে pass করেছে।

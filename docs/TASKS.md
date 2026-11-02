@@ -167,7 +167,8 @@ Details are in [BACKEND.md](BACKEND.md#tasks).
 | P5-T3 | PostgreSQL setup | None |
 | P5-T4 | Async ORM | `sqlalchemy[asyncio]`, `asyncpg`, `pytest-asyncio` |
 | P5-T5 | Alembic | `alembic` |
-| P5-T6 | Database models | None |
+| P5-T6 | User, conversation, and message models | None |
+| P5-T6A | Account authentication and authorization | Authentication packages after approved review |
 | P5-T7 | API schemas and error format | None |
 | P5-T8 | Conversation endpoints | None |
 | P5-T9 | Message retrieval | None |
@@ -193,6 +194,7 @@ Details are in [FRONTEND.md](FRONTEND.md#tasks).
 | P6-T2 | Tailwind and design tokens | Tailwind |
 | P6-T3 | shadcn/ui configuration | shadcn, Radix, Lucide |
 | P6-T4 | Application shell | None |
+| P6-T4A | Authentication pages and protected chat routes | None unless a reviewed need appears |
 | P6-T5 | Sidebar and navigation | None |
 | P6-T6 | Chat message components | None |
 | P6-T7 | Prompt composer | None |
@@ -215,8 +217,9 @@ Phase 6 connects the UI to the backend, and this phase proves the whole product 
 | P7-T1 | Test the full chat with the real model | `docs/PROGRESS.md`* | Streaming, Stop, follow-ups, reload, and delete all work and are recorded |
 | P7-T2 | Test every failure from the browser | `apps/web/`*, `apps/api/`* for approved fixes | Busy, no model, server down, and database down each show the right message |
 | P7-T3 | Add essential Playwright tests | `apps/web/e2e/`, `apps/web/playwright.config.ts`, `apps/web/package.json`* | Send, stream, stop, and reload pass using a small test checkpoint |
+| P7-T4 | Test accounts and data isolation | `docs/PROGRESS.md`* | Register, login, logout, protected routes, and cross-user conversation denial are recorded |
 
-### Details for P7-T1 to P7-T3
+### Details for P7-T1 to P7-T4
 
 Phase 6 connects the UI to the backend. These tasks prove the whole product works together. Use the dev scripts created in P5-T1 and P6-T1, and confirm the exact commands in the repo before running them.
 
@@ -268,6 +271,17 @@ Phase 6 connects the UI to the backend. These tasks prove the whole product work
 - **Verify:** `pnpm --filter web test:e2e`
 - **Learning:** What an end-to-end test covers that component tests cannot, and why the tests use a tiny model.
 
+#### P7-T4: Test accounts and data isolation
+
+- **Objective:** Prove that public account access works and that one user cannot access another user's chats.
+- **Prerequisites:** P7-T3.
+- **Files:** `docs/PROGRESS.md`* only. `apps/web/` and `apps/api/` change only for a separately approved bug fix.
+- **Packages:** None.
+- **Steps:** In two fresh browser sessions, register two test users; log in and out; try opening, listing, sending to, and deleting the other user's conversation ID; then confirm the normal user can still chat after the failed attempts. Record the exact status and UI result for each case.
+- **Acceptance:** Registration, login, logout, protected-route redirect, and each cross-user attempt have real recorded results. Cross-user requests reveal neither content nor existence. Any bug is listed and fixed only with approval.
+- **Verify:** `uv run --package brainx-api pytest apps/api/tests/test_auth.py`, `pnpm --filter web test:e2e`, and the two-session browser script above.
+- **Learning:** Why authentication alone is not enough without authorization on every data query.
+
 ## Phase 8: Final Testing
 
 | ID | Task | Files | Done when |
@@ -277,8 +291,9 @@ Phase 6 connects the UI to the backend. These tasks prove the whole product work
 | P8-T3 | Final UI review with the owner | `apps/web/`* | Owner approves the look |
 | P8-T4 | Finish the README | `README.md`* | A clean clone can follow it, and results are real |
 | P8-T5 | Prepare the portfolio demo | `README.md`*, `docs/` | Screenshots and a short demo script exist |
+| P8-T6 | Deploy the public portfolio app | Deployment configuration and `docs/PROGRESS.md`* | The HTTPS live URL, health check, account flow, chat, limits, and rollback steps are verified |
 
-### Details for P8-T1 to P8-T5
+### Details for P8-T1 to P8-T6
 
 #### P8-T1: Run all tests and fix found bugs
 
@@ -354,13 +369,24 @@ Phase 6 connects the UI to the backend. These tasks prove the whole product work
 - **Verify:** Open each file, and trace each number to its source
 - **Learning:** How to present a project honestly, including what it cannot do.
 
+#### P8-T6: Deploy the public portfolio app
+
+- **Objective:** Publish the finished portfolio app safely, with an honest record of its limits and a way to recover from a failed release.
+- **Prerequisites:** P8-T5 and the owner's explicit approval of the selected hosting provider, expected cost, production domain, and secrets plan.
+- **Files:** Only deployment configuration and `docs/PROGRESS.md`*, chosen after the provider decision. Do not create cloud resources or send data to a provider before that approval.
+- **Packages:** None by default. Any provider SDK, deployment CLI, or monitoring package needs its own package review and approval.
+- **Steps:** Use P4-T6 and P5-T18 measurements to choose a host that fits the model's real CPU memory and latency needs; configure separate production secrets; enable HTTPS; set the exact web origin and secure session-cookie settings; apply migrations; deploy; test the health endpoint, account flow, and one chat; document the live URL, a resource limit, expected limitations, and rollback command.
+- **Acceptance:** The public URL uses HTTPS; login, ownership checks, and chat work; secrets are absent from git and browser storage; local development still works; and the documentation contains only measured performance and real deployment details.
+- **Verify:** Visit the HTTPS URL in a private browser window, complete the P7-T1 and P7-T4 scripts, inspect browser storage, run the deployed health check, and follow the documented rollback procedure without executing it.
+- **Learning:** Why production is a separate environment, and why deployment starts with measured model requirements rather than a favourite host.
+
 ## Setup work outside the numbered tasks
 
 This work was done before Phase 1 so the agent can follow the workflow in [AGENTS.md](../AGENTS.md).
 
 | Item | Where | Status |
 |---|---|---|
-| Seven skills (`/brainx-task`, `-verify`, `-walkthrough`, `-teach`, `-progress`, `-package`, `-train`) | `.claude/skills/` | Written and committed except `-walkthrough`; not yet run in Claude Code |
+| Seven skills (`/brainx-task`, `-verify`, `-walkthrough`, `-teach`, `-progress`, `-package`, `-train`) | `.claude/skills/` | Written and committed; not yet run in Claude Code |
 | Two read-only subagents (`scope-reviewer`, `doc-auditor`) | `.claude/agents/` | Written and committed; not yet run |
 | Guard hook for risky commands | `.claude/hooks/brainx_guard.py`, `.claude/settings.json` | Script passed 103 sample commands alone; did not fire in the session that created it |
 | Student guide | [GUIDE.md](GUIDE.md) | Written |

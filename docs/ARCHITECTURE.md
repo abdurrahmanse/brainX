@@ -6,7 +6,7 @@ This is the planned system overview. Details are in [MODEL.md](MODEL.md), [BACKE
 
 ```mermaid
 flowchart LR
-    B[Browser: apps/web] -->|"REST and SSE"| A[FastAPI: apps/api]
+    B[Browser: apps/web] -->|"HTTPS, REST and SSE"| A[FastAPI: apps/api]
     A --> D[(PostgreSQL)]
     A --> I[model/src/inference.py]
     C[(Model artifact)] --> I
@@ -22,8 +22,8 @@ flowchart LR
 Folders marked "planned" don't exist yet, and each is created by the task that needs it. `model/` is the exception: it exists with empty placeholder files, created at the owner's request (see [MODEL.md](MODEL.md#folder-structure)).
 
 ```text
-apps/web/             Next.js chat UI (exists as a starter)
-apps/api/             FastAPI server (planned)
+apps/web/             Next.js chat UI and account screens (exists as a starter)
+apps/api/             FastAPI server: auth, conversations, chat, inference (planned)
 model/                notebooks, src, configs, data, checkpoints, outputs, tests (exists, empty placeholders)
 packages/             shared ESLint and TypeScript settings (exist)
 docs/                 project documentation
@@ -32,7 +32,7 @@ package.json          JavaScript workspace (exists)
 turbo.json            Turborepo tasks (exists)
 ```
 
-`apps/admin` (the starter's `apps/docs`, renamed) and `packages/ui` aren't part of the MVP plan. P1-T4 asks the owner what to do with them.
+`apps/admin` (the starter's `apps/docs`, renamed) and `packages/ui` are kept as portfolio/supporting UI. `web` is the public chat product; `admin` must not expose private user data.
 
 **Python setup:** a `uv` workspace with `apps/api` and `model` as members. FastAPI imports the model with `from src.inference import ...`. A temporary test confirmed this layout on 2026-11-02, and P1-T6 repeats it in the real repo.
 
@@ -60,12 +60,13 @@ The backend stores conversations in PostgreSQL. The browser sends only the new m
 | Decision | Why |
 |---|---|
 | Generate replies inside the API process | One server is simpler, and a separate one would add complexity with little benefit here |
-| One reply at a time | There is one user, so no queue is needed |
-| Browser calls FastAPI directly | Avoids a proxy that might buffer the stream |
+| One reply at a time | The small model is loaded once; a global lock protects memory and public users receive a clear busy response |
+| Browser calls FastAPI directly | Avoids a proxy that might buffer the stream; production CORS allows only the deployed web origin |
 | PostgreSQL stores conversations | The owner chose it to practise backend engineering, and history needs a database |
 | `fastapi.sse`, not `sse-starlette` | The built-in option passed the disconnect test, so another package would be redundant |
-| No Redis, queue, or login in the MVP | One local user has no need for them |
-| API runs outside Docker | Docker on a Mac can't use MPS, and PostgreSQL alone benefits from Compose |
+| Password accounts in the MVP | Registration and login make the public portfolio usable; authentication implementation is specified in P5-T6A |
+| No Redis or background queue | A small portfolio deployment has one generator; rate limits and the busy response protect it before more infrastructure is justified |
+| API runs outside Docker locally | Docker on a Mac can't use MPS; production packaging is selected only after P4-T6 measures CPU requirements |
 | Full training runs in a terminal | A closed notebook kernel could lose hours of work |
 
 ## Tools and versions
@@ -87,8 +88,10 @@ Checked on 2026-11-02. Package tables and their test status are in [MODEL.md](MO
 
 ## Security and privacy
 
-- The server listens only on `127.0.0.1`. There is no login, so it must not be exposed to a network.
-- CORS allows only `http://localhost:3000`.
+- Local development listens only on `127.0.0.1`. Production is exposed only behind HTTPS and its hosting platform's network controls.
+- CORS allows only the configured local or deployed web origin; it never uses `*` with credentialed requests.
+- Passwords are hashed, session credentials use secure HTTP-only cookies, and every conversation query is scoped to its authenticated owner.
+- Public requests have input limits, a global generation lock, and a basic per-account or per-IP request limit before deployment.
 - Model output is untrusted. Markdown rendering keeps raw HTML disabled, links aren't clickable, and P6-T8 and P6-T9 test this with script tags.
 - Checkpoints load with `weights_only=True`.
 - Logs never contain prompts or replies, and no telemetry leaves the machine.

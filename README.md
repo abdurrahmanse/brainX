@@ -1,6 +1,6 @@
 # brainX
 
-**A ChatGPT-style chatbot powered by a small language model trained from scratch, running entirely on one Mac.**
+**A public, ChatGPT-style portfolio chatbot powered by a small language model trained from scratch.**
 
 ![Status: planning](https://img.shields.io/badge/status-planning-orange)
 ![Model: trained from scratch](https://img.shields.io/badge/model-trained%20from%20scratch-blue)
@@ -44,12 +44,13 @@ The MVP is text only.
 - A Stop button that keeps the partial reply.
 - Multi-turn conversations, with earlier messages sent as context.
 - Saved conversation history in PostgreSQL: reopen or delete earlier chats.
+- Email-and-password registration, login, logout, and private per-user conversation history.
 - Markdown replies with syntax-highlighted code blocks and a copy button.
 - A settings panel for temperature, top-k, top-p, and reply length.
 - Light and dark themes, keyboard shortcuts, and a responsive layout.
 - A Minimalist + Neo-Brutalist design ([DESIGN.md](docs/DESIGN.md)).
 
-Out of scope: login, payments, images, voice, file upload, web search, and cloud deployment.
+Out of scope: payments, images, voice, file upload, web search, email verification, and password reset.
 
 ## How it fits together
 
@@ -151,7 +152,7 @@ There is nothing to run yet. The setup and run commands will be written as the t
 
 1. Read [PROJECT.md](docs/PROJECT.md) for the goals and scope.
 2. Read [TASKS.md](docs/TASKS.md) for the order of work.
-3. To work on it with Claude Code, read [GUIDE.md](docs/GUIDE.md) (written in Bengali for the author), then run `/brainx-task P1-T3`.
+3. To work on it with Claude Code, read [GUIDE.md](docs/GUIDE.md) (written in Bengali for the author), then run `/brainx-task P1-T4`.
 
 ## Documentation
 

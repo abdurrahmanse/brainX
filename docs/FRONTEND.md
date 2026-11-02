@@ -91,6 +91,8 @@ packages/ui/turbo/generators/   "turbo gen component" makes a new component file
 
 apps/web/                  the chat app
   app/                     pages and layout (Next.js requires this folder)
+    (auth)/                login and registration routes, added in P6-T4A
+    (chat)/                authenticated chat routes, added when real routing starts
   components/              pieces only the chat app uses
   hooks/  lib/  stores/  types/     added only when a task first needs them
 apps/admin/                the same shape, with its own pages
@@ -106,6 +108,7 @@ Each piece of state has one owner, so nothing is stored twice.
 | State | Owner | Saved? |
 |---|---|---|
 | Conversations and saved messages | TanStack Query cache, from the API | Yes, in PostgreSQL |
+| Signed-in user | Auth feature reads the HTTP-only session through `GET /auth/me` | Yes, server session/cookie; never `localStorage` |
 | Generation settings | Zustand store | Yes, in `localStorage` |
 | Theme | `next-themes` | Yes, handled by the package |
 | Text being typed, sidebar open or closed | React state | No |
@@ -139,6 +142,7 @@ If `localStorage` is blocked or full, chat must keep working with default settin
 
 - `apps/web/.gitignore` contains `.env*`, which would also ignore `.env.example`. P1-T5 adds `!.env.example` after it, so the example file can be committed.
 - The API allows only the origin `http://localhost:3000`, so open the app at `localhost:3000`, not `127.0.0.1:3000`.
+- Requests to the API use credentialed fetch only for the configured API origin. The browser never reads, stores, or renders a password after submitting the login or registration form.
 
 ## Tasks
 
@@ -187,11 +191,21 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Acceptance:** Matches the DESIGN.md layout, and the notice is always visible.
 - **Testing:** A test checks that the notice and empty state render.
 
+### P6-T4A: Authentication pages and protected chat routes
+
+- **Purpose:** Let a visitor register or log in before using their private chat history.
+- **Prerequisites:** P5-T6A and P6-T4.
+- **Packages:** None new unless the existing React and browser APIs cannot safely meet a documented need; any package needs a separate review.
+- **Files:** `apps/web/app/`, `apps/web/components/`, `apps/web/lib/`, `apps/web/types/`, `apps/web/tests/`.
+- **Instructions:** Add registration and login forms with accessible validation, a logout control, session loading/error states, and routing that sends unauthenticated visitors to login. Use the API's HTTP-only cookie with credentialed requests; do not put a password or auth token in `localStorage`.
+- **Acceptance:** A new user can register, log in, reload, log out, and is redirected away from the chat when no session exists. Password fields are never logged or saved in browser storage.
+- **Testing:** Component tests cover validation and request states; an end-to-end test covers register, login, logout, and protected navigation.
+
 ### P6-T5: Sidebar and navigation
 
 - **Purpose:** Give the conversation list a home and support collapsing.
 - **Status:** Partly done early: a fixed sidebar on desktop and a slide-over menu on mobile. Left: real conversation list, collapsing on desktop, and `Cmd/Ctrl+B`.
-- **Prerequisites:** P6-T4.
+- **Prerequisites:** P6-T4A.
 - **Packages:** shadcn `sidebar`, if it fits; otherwise a simple component.
 - **Files:** `packages/ui/src/`, `packages/ui/src/`.
 - **Instructions:** Add a collapsible sidebar with a **New chat** button and placeholder list. Add `Cmd/Ctrl+B`.

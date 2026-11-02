@@ -16,7 +16,7 @@ The main goals are to learn how language models work and to finish a working dem
 | Training data | AI-generated and share-alike datasets are allowed, and the trained weights stay private |
 | Stack | Turborepo, Next.js, React, TypeScript, Tailwind CSS, FastAPI, PostgreSQL, PyTorch. Packages are in [FRONTEND.md](FRONTEND.md), [BACKEND.md](BACKEND.md), and [MODEL.md](MODEL.md) |
 | Architecture | Lightweight modular monolith, with no microservices |
-| Deployment | Local only |
+| Deployment | Public portfolio deployment after local validation; hosting provider is chosen only after real CPU inference measurements |
 
 ## MVP features
 
@@ -32,31 +32,39 @@ The main goals are to learn how language models work and to finish a working dem
 5. Start a new chat from a collapsible sidebar.
 6. Reopen or delete earlier conversations from the history list, saved in PostgreSQL.
 
+**Accounts**
+
+7. Register, log in, and log out with an email and password.
+8. See only your own conversations and messages.
+
 **Experience**
 
-7. Choose a light or dark theme.
-8. Change generation settings in a basic settings panel.
-9. Use the app on desktop and mobile, with keyboard shortcuts and accessible dialogs.
-10. See consistent loading, empty, and error states, including toast notifications.
+9. Choose a light or dark theme.
+10. Change generation settings in a basic settings panel.
+11. Use the app on desktop and mobile, with keyboard shortcuts and accessible dialogs.
+12. See consistent loading, empty, and error states, including toast notifications.
 
 ## Not in the MVP
 
-Login, payments, image generation, voice, file upload, web search, cloud deployment, renaming chats, Redis, and background job queues.
+Payments, image generation, voice, file upload, web search, email verification, password reset, renaming chats, Redis, and background job queues.
 
 ## How it is used
 
-1. **Chat:** open the app, type a question, watch the reply stream, and press Stop if needed.
-2. **Continue:** send a follow-up in the same chat. The model sees the earlier messages that fit in its 512-token window.
-3. **Come back:** reload or restart. The history list shows earlier chats, and you can open or delete one.
-4. **Adjust:** open the settings panel, change temperature or reply length, and reset to the defaults.
-5. **Recover:** if the model, server, or database is unavailable, the app says so and works again once the problem is fixed.
+1. **Account:** register or log in, then receive an authenticated browser session.
+2. **Chat:** open the app, type a question, watch the reply stream, and press Stop if needed.
+3. **Continue:** send a follow-up in the same chat. The model sees the earlier messages that fit in its 512-token window.
+4. **Come back:** reload or restart. The history list shows only the signed-in user's earlier chats, which they can open or delete.
+5. **Adjust:** open the settings panel, change temperature or reply length, and reset to the defaults.
+6. **Recover:** if the model, server, or database is unavailable, the app says so and works again once the problem is fixed.
 
 ## Non-functional requirements
 
 | Area | Requirement | Checked in |
 |---|---|---|
-| Privacy | Everything stays on this Mac. The API listens on 127.0.0.1, and logs never contain prompts or replies. | P5-T15, P5-T16, P8-T2 |
-| Offline | Chat works without internet once set up. | P8-T2 |
+| Privacy | Production logs never contain passwords, prompts, or replies. Secrets stay in the host's secret store, never in git. | P5-T15, P5-T16, P8-T6 |
+| Offline | The local development build works without internet once set up. The public deployment naturally requires an internet connection. | P8-T2 |
+| Accounts | Passwords are stored only as strong hashes; authenticated users can access only their own data. | P5-T6A, P5-T16, P7-T4 |
+| Public safety | Production uses HTTPS, secure cookies, an allow-list CORS policy, request limits, and a documented one-generation capacity limit. | P5-T6A, P5-T16, P8-T6 |
 | Reproducibility | Each training run records its config, seed, git commit, and data hashes. | P3-T4, P3-T5 |
 | Honesty | Every reported number comes from a real run. | `AGENTS.md`, every task report |
 | Accessibility | Keyboard use, WCAG AA contrast, and no sideways scrolling at 375px. | P6-T14, P6-T15 |
@@ -73,17 +81,20 @@ Login, payments, image generation, voice, file upload, web search, cloud deploym
 | 4 | Markdown, code blocks, copy | P6-T6, P6-T8, P6-T9 | P6-T16 |
 | 5 | New chat and collapsible sidebar | P6-T5 | P7-T1 |
 | 6 | History: reopen and delete | P5-T8, P5-T9, P6-T12 | P7-T1, P7-T3 |
-| 7 | Light and dark theme | P6-T10 | P8-T3 |
-| 8 | Settings panel | P5-T13, P6-T13 | P7-T1 |
-| 9 | Responsive, keyboard, accessible | P6-T14, P6-T15 | P8-T3 |
-| 10 | Loading, empty, and error states | P5-T14, P6-T4, P6-T11 | P7-T2 |
+| 7 | Register, log in, log out | P5-T6A, P6-T4A | P7-T4 |
+| 8 | Per-user conversation access | P5-T6, P5-T8 | P7-T4 |
+| 9 | Light and dark theme | P6-T10 | P8-T3 |
+| 10 | Settings panel | P5-T13, P6-T13 | P7-T1 |
+| 11 | Responsive, keyboard, accessible | P6-T14, P6-T15 | P8-T3 |
+| 12 | Loading, empty, and error states | P5-T14, P6-T4, P6-T11 | P7-T2 |
 
 ## Definition of finished
 
 - A model trained in this repo answers in the browser, with no internet connection.
 - Replies stream, and follow-up messages include earlier context.
+- A registered user can log in and can never read or change another user's conversation.
 - Tests pass, and evaluation results come from real runs.
-- The README explains setup, results, and limits for a portfolio reader.
+- The README explains setup, results, limits, and the live portfolio URL for a portfolio reader.
 
 ## Expected model quality
 
@@ -92,6 +103,12 @@ These are expectations, not results, because no training has run yet.
 - **Likely:** simple English sentences and replies in the right format.
 - **Often wrong:** facts, because a small model remembers little and cannot look anything up.
 - **Not expected:** maths, code, or long reasoning.
+
+## Public deployment boundary
+
+The model is trained and evaluated locally first. Public deployment happens only after P4-T6 measures real CPU inference speed and memory, because a small hosted CPU service may be slower than this Mac. The hosting provider, domain, budget, and production environment are deliberately not chosen in advance. P8-T6 makes that choice from measured requirements, deploys with secrets outside git, and records the real URL and limitations.
+
+The initial public version remains **English only**. Bengali support would require a different data, tokenizer, and evaluation decision before P2-T3; it is not implied merely by a Bengali user interface.
 
 ## Working rules
 
