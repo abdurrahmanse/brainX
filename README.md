@@ -1,1 +1,1 @@
-# BrainX
+# brainX: AI Agent 
