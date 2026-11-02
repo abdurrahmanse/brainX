@@ -88,7 +88,7 @@ Details: [MODEL.md](docs/MODEL.md).
 | Part | Technology |
 |---|---|
 | Monorepo | Turborepo, pnpm |
-| Frontend | Next.js, React, TypeScript (strict), Tailwind CSS, shadcn/ui |
+| Frontend | Next.js, React, TypeScript (strict), Tailwind CSS 4, Radix UI, shared design system |
 | Backend | Python, FastAPI, SQLAlchemy, Alembic, PostgreSQL |
 | Model | PyTorch |
 | Python tooling | uv, pytest, Ruff, mypy |
@@ -101,12 +101,12 @@ Packages are added only in the task that needs them. Versions and reasons are in
 ```text
 apps/
   web/            Next.js app (starter now; becomes the chat UI)
-  admin/          Starter app, renamed; its future is decided in P1-T4
+  admin/          Admin area, same design system as web (pages are placeholders)
   api/            FastAPI server (planned)
 packages/
   eslint-config/  Shared lint settings
   typescript-config/  Shared TypeScript settings
-  ui/             Starter component package (to be reviewed in P1-T4)
+  ui/             Shared design system: tokens and components used by web and admin
 model/            Notebooks, source, configs, tests (empty placeholders so far)
 docs/             Project documentation
 .claude/          Helpers for Claude Code: skills, subagents, and a safety hook
@@ -118,7 +118,7 @@ The plan has 8 phases and 79 small tasks. Phase 1 is in progress.
 
 | Phase | Focus | Tasks | Status |
 |---|---|:-:|---|
-| 1 | Planning and setup | 6 | In progress (2 done) |
+| 1 | Planning and setup | 6 | In progress (3 done, 1 partly) |
 | 2 | Dataset and tokenizer | 10 | Not started |
 | 3 | Model and training | 11 | Not started |
 | 4 | Evaluation and local inference | 8 | Not started |
@@ -144,6 +144,8 @@ There is nothing to run yet. The setup and run commands will be written as the t
 | uv | 0.12.15 |
 | PostgreSQL | 18 (the installed binary reports 18.6) |
 | Docker | Optional |
+
+**To see the UI today:** run `pnpm dev` (Turborepo starts both apps). Open `http://localhost:3000` for the chat preview and `http://localhost:3001` for the admin area, where `/design` shows every colour and component. Both are static previews, not connected to a model yet.
 
 **To follow the project today:**
 

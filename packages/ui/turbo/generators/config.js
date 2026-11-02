@@ -1,3 +1,4 @@
+/* global module */
 // "turbo gen component" creates a new component file in packages/ui/src,
 // so every component starts with the same simple shape.
 module.exports = function generator(plop) {

@@ -49,29 +49,55 @@ Each package is added only in its task, after approval.
 4. Install only after approval.
 5. Avoid overlapping packages.
 
+## UI foundation (done early, 2026-11-02)
+
+At the owner's request the shared design system was built before the model work. Both apps now use one set of tokens and components.
+
+| Package | Version | Installed in | Used for |
+|---|---:|---|---|
+| `tailwindcss` | 4.3.3 | `packages/ui` | Styling, and the `@import` of the design tokens |
+| `@tailwindcss/postcss`, `postcss` | 4.3.3, 8.5.32 | `web`, `admin` | Turns Tailwind classes into CSS |
+| `radix-ui` | 1.8.1 | `packages/ui` | Accessible parts (the mobile menu dialog, the button `asChild` slot) |
+| `class-variance-authority`, `clsx`, `tailwind-merge` | 0.7.1, 2.1.1, 3.7.0 | `packages/ui` | Button and badge variants, and joining class names safely |
+| `lucide-react` | 1.66.0 | `packages/ui` | Icons (apps import them from `@repo/ui/icons`) |
+| `next-themes` | 0.4.6 | `packages/ui` | System, Light, and Dark themes |
+| `sonner` | 2.0.8 | `packages/ui` | Toast messages |
+
+**What was checked:** `pnpm check-types`, `pnpm lint`, and `pnpm build` pass, and screenshots of both apps (light and dark, desktop and a true 390px width) match [DESIGN.md](DESIGN.md).
+
+**What was not checked:** clicking the theme toggle, the mobile menu, and the toast in a real browser (only screenshots were taken), and `pnpm dev` hot reloading with the new setup. A dev server that was already running must be restarted to pick up the Tailwind and PostCSS files.
+
+**Decisions made along the way:**
+
+- The `geist` npm package was tried and removed: its type files export nothing under TypeScript 7. The apps keep using their local Geist font files, which also work offline.
+- The shadcn CLI was **not** run. The components are written by hand in the same style (variants with `class-variance-authority`, parts from Radix). P6-T3 decides whether to use the CLI for further components.
+- The old `src/` and `features/` layout in this file was replaced by the flat layout below.
+
+**Pages that exist now:** `web` has a static chat preview (a header, a sample history, a sample reply with a streaming cursor, and a composer that only shows a toast). `admin` has an Overview with placeholder status cards and a `/design` page that shows every colour and component. Nothing is connected to the model or the API yet.
+
+**Related tasks below:** P6-T2 (tokens) and P6-T10 (theme) are done. P6-T3, P6-T4, P6-T5, P6-T6, P6-T7, and P6-T11 are partly done, and each says what is left.
+
 ## Folder structure
 
-These folders are created only when a task first needs them.
+Keep it flat: one level of folders and one file per job. Anything both apps need lives in a shared package (this is what Turborepo is for), so `web` and `admin` never copy code.
 
 ```text
-apps/web/src/
-├── app/              routes, layout, providers
-├── components/
-│   ├── ui/           shadcn components
-│   ├── layout/       app shell, sidebar, header
-│   └── chat/         message list, messages, composer, code block
-├── features/
-│   ├── chat/         sending, streaming, and stopping
-│   ├── conversations/ conversation list and actions
-│   └── settings/     settings panel and values
-├── hooks/            shared React hooks
-├── lib/              API client and stream reader
-├── stores/           Zustand stores
-├── styles/           global CSS and tokens
-└── types/            API and chat types
+packages/ui/src/           the shared look and feel, used by BOTH apps
+  styles.css               colours, fonts, shapes (the design tokens)
+  button.tsx, card.tsx ... one file per component
+  app-shell.tsx            header + sidebar + main area
+  cn.ts, icons.ts          small helpers
+packages/ui/turbo/generators/   "turbo gen component" makes a new component file
+
+apps/web/                  the chat app
+  app/                     pages and layout (Next.js requires this folder)
+  components/              pieces only the chat app uses
+  hooks/  lib/  stores/  types/     added only when a task first needs them
+apps/admin/                the same shape, with its own pages
+  app/  components/
 ```
 
-**Rule of thumb:** `components/` shows things, and `features/` holds behaviour.
+**Rule of thumb:** if both apps need it, it goes in `packages/ui`. If only one app needs it, it stays in that app's `components/`.
 
 ## State
 
@@ -123,17 +149,18 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Purpose:** Prepare a clean base with tests, so later work can be checked.
 - **Prerequisites:** P5-T20 (Phase 5 is finished, so the backend exists).
 - **Packages:** Vitest and Testing Library packages listed above.
-- **Files:** `apps/web/src/app/`, `apps/web/package.json`, `apps/web/tsconfig.json`, `apps/web/vitest.config.ts`.
-- **Instructions:** Move `app/` to `src/app/`, replace the starter page with a plain heading, confirm strict TypeScript is on, and add a `test` script.
+- **Files:** `apps/web/app/`, `apps/web/package.json`, `apps/web/tsconfig.json`, `apps/web/vitest.config.ts`.
+- **Instructions:** Keep `app/` where it is (there is no `src/` folder). Confirm strict TypeScript is on, add Vitest, and add a `test` script. The starter page was already replaced by the UI foundation.
 - **Acceptance:** The page shows the heading, and one sample test passes.
 - **Testing:** Run `pnpm --filter web test`, then open the page.
 
 ### P6-T2: Tailwind and design tokens
 
 - **Purpose:** Keep colours, type, and spacing in one place.
+- **Status:** Done early. Tokens live in `packages/ui/src/styles.css` and both apps import them. Left: confirm the contrast rule for the code theme in P6-T9.
 - **Prerequisites:** P6-T1.
 - **Packages:** `tailwindcss`, `@tailwindcss/postcss`.
-- **Files:** `apps/web/postcss.config.mjs`, `apps/web/src/styles/globals.css`, `apps/web/src/app/layout.tsx`.
+- **Files:** `apps/web/postcss.config.mjs`, `packages/ui/src/styles.css`, `apps/web/app/layout.tsx`.
 - **Instructions:** Add Tailwind, then define every token in [DESIGN.md](DESIGN.md) for light and dark. Load Geist from the local font files.
 - **Acceptance:** Text and borders use tokens, and both system themes show correctly.
 - **Testing:** Switch the Mac's appearance setting and check the page. Confirm no font request leaves the machine.
@@ -141,9 +168,10 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T3: shadcn/ui configuration
 
 - **Purpose:** Get accessible base components that we can restyle.
+- **Status:** Partly done early. The components are hand-written in shadcn style with Radix. Left: decide whether to run the shadcn CLI (`--base radix`) for more components. It has not been tested here.
 - **Prerequisites:** P6-T2.
 - **Packages:** `shadcn` CLI, `radix-ui`, `lucide-react`, plus any helpers it lists.
-- **Files:** `apps/web/components.json`, `apps/web/src/components/ui/`, `apps/web/src/lib/utils.ts`, `apps/web/package.json`.
+- **Files:** `apps/web/components.json`, `packages/ui/src/`, `packages/ui/src/cn.ts`, `apps/web/package.json`.
 - **Instructions:** Check the CLI's monorepo and Tailwind 4 behaviour first. Run `init` with `--base radix`, then add only `button`. Restyle it to match DESIGN.md.
 - **Acceptance:** Button matches every state in DESIGN.md, using Radix and not Base UI.
 - **Testing:** A test renders the button and clicks it. Tab to it and check the focus outline.
@@ -151,9 +179,10 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T4: Application shell
 
 - **Purpose:** Create the page frame that holds everything.
+- **Status:** Done early as a static shell: `AppShell` in `packages/ui/src/app-shell.tsx`, used by both apps. Left: connect it to real data.
 - **Prerequisites:** P6-T3.
 - **Packages:** None new.
-- **Files:** `apps/web/src/components/layout/`, `apps/web/src/app/page.tsx`.
+- **Files:** `packages/ui/src/`, `apps/web/app/page.tsx`.
 - **Instructions:** Build the header, sidebar area, message area, and composer area. Add the small-model notice and the empty conversation state.
 - **Acceptance:** Matches the DESIGN.md layout, and the notice is always visible.
 - **Testing:** A test checks that the notice and empty state render.
@@ -161,9 +190,10 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T5: Sidebar and navigation
 
 - **Purpose:** Give the conversation list a home and support collapsing.
+- **Status:** Partly done early: a fixed sidebar on desktop and a slide-over menu on mobile. Left: real conversation list, collapsing on desktop, and `Cmd/Ctrl+B`.
 - **Prerequisites:** P6-T4.
 - **Packages:** shadcn `sidebar`, if it fits; otherwise a simple component.
-- **Files:** `apps/web/src/components/layout/`, `apps/web/src/components/ui/`.
+- **Files:** `packages/ui/src/`, `packages/ui/src/`.
 - **Instructions:** Add a collapsible sidebar with a **New chat** button and placeholder list. Add `Cmd/Ctrl+B`.
 - **Acceptance:** The sidebar opens and closes by mouse and keyboard.
 - **Testing:** A test toggles the sidebar. Try it by hand.
@@ -171,9 +201,10 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T6: Chat message components
 
 - **Purpose:** Show user and assistant messages.
+- **Status:** Partly done early: a static sample message block in `apps/web/components/chat-preview.tsx`. Left: message states, the copy button, and real data.
 - **Prerequisites:** P6-T5.
 - **Packages:** None new.
-- **Files:** `apps/web/src/components/chat/`, `apps/web/src/types/`.
+- **Files:** `apps/web/components/`, `apps/web/types/`.
 - **Instructions:** Build the message list and both message types, using sample data for each state: streaming, complete, stopped, failed. Add the **Copy** button.
 - **Acceptance:** Each state matches DESIGN.md, and Copy puts the full text on the clipboard.
 - **Testing:** Tests render each state and check Copy.
@@ -181,9 +212,10 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T7: Prompt composer
 
 - **Purpose:** Let the user write and send a message.
+- **Status:** Partly done early: a static composer. Left: auto-resize, Stop, and the keyboard shortcuts.
 - **Prerequisites:** P6-T6.
 - **Packages:** None new.
-- **Files:** `apps/web/src/components/chat/`.
+- **Files:** `apps/web/components/`.
 - **Instructions:** Build an auto-resizing textarea with a maximum height, plus Send and Stop buttons. Add `Enter`, `Shift+Enter`, `Esc`, and `/`.
 - **Acceptance:** Empty messages can't be sent, and Send becomes Stop while streaming.
 - **Testing:** Tests cover each key and button state.
@@ -193,7 +225,7 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Purpose:** Format assistant replies.
 - **Prerequisites:** P6-T7.
 - **Packages:** `react-markdown`, `remark-gfm`.
-- **Files:** `apps/web/src/components/chat/`.
+- **Files:** `apps/web/components/`.
 - **Instructions:** Render assistant messages as Markdown and style each element with tokens. Don't enable raw HTML. Render links as plain text, so that invented links can't be clicked.
 - **Acceptance:** Lists, tables, and code display correctly. HTML in a reply appears as harmless text.
 - **Testing:** A test passes in `<script>` and `<img onerror>` text, and confirms no such element is created.
@@ -203,7 +235,7 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Purpose:** Make code blocks readable.
 - **Prerequisites:** P6-T8.
 - **Packages:** `shiki`.
-- **Files:** `apps/web/src/components/chat/`.
+- **Files:** `apps/web/components/`.
 - **Instructions:** Build the code block with language label and Copy. Load Shiki on first use, and highlight only finished replies. Choose light and dark themes that meet the contrast rule.
 - **Acceptance:** Code shows plain, then highlighted. An unknown language stays plain without an error. Code containing HTML appears as text.
 - **Testing:** A test uses code containing `<script>`. Check the page's network requests with Wi-Fi off. Record the bundle-size change.
@@ -211,9 +243,10 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T10: Theme management
 
 - **Purpose:** Let the user choose a theme.
+- **Status:** Done early: `ThemeProvider` and `ThemeToggle` (System, Light, Dark) in `packages/ui`. Left: reload with no flash, checked by hand.
 - **Prerequisites:** P6-T9.
 - **Packages:** `next-themes`.
-- **Files:** `apps/web/src/app/`, `apps/web/src/components/layout/`, `apps/web/src/styles/globals.css`.
+- **Files:** `apps/web/app/`, `packages/ui/src/`, `packages/ui/src/styles.css`.
 - **Instructions:** Support System, Light, and Dark, with System as the default, and add a control to the header.
 - **Acceptance:** The choice survives a reload, with no flash of the wrong theme.
 - **Testing:** A test covers the control. Reload in each theme by hand.
@@ -221,10 +254,11 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 ### P6-T11: Streaming UI integration
 
 - **Purpose:** Connect the UI to the real model.
+- **Status:** Partly done early: `Toaster` and `toast` are installed and shown on the design page. Left: the API client, stream reader, and error states.
 - **Prerequisites:** P6-T10, and the backend streaming API (P5-T11, P5-T12).
 - **Packages:** `sonner`.
-- **Files:** `apps/web/src/lib/`, `apps/web/src/features/chat/`, `apps/web/src/components/ui/`, `apps/web/src/app/`, `apps/web/.env.example`.
-- **Instructions:** Write the API client and stream reader. Read the API address from `NEXT_PUBLIC_API_URL` (see Configuration above). Handle the four stream events `start`, `delta`, `done`, and `error` described in [BACKEND.md](BACKEND.md#stream-events). Write the request and response types by hand in `src/types` (no generator: `openapi-typescript` needs TypeScript 5 and this repo uses 7), then compare them once with the fields in the API's `/openapi.json`. Stream replies into the message list, with Stop aborting the request. Show errors as toasts and inline notices.
+- **Files:** `apps/web/lib/`, `apps/web/components/`, `packages/ui/src/`, `apps/web/app/`, `apps/web/.env.example`.
+- **Instructions:** Write the API client and stream reader. Read the API address from `NEXT_PUBLIC_API_URL` (see Configuration above). Handle the four stream events `start`, `delta`, `done`, and `error` described in [BACKEND.md](BACKEND.md#stream-events). Write the request and response types by hand in `apps/web/types` (no generator: `openapi-typescript` needs TypeScript 5 and this repo uses 7), then compare them once with the fields in the API's `/openapi.json`. Stream replies into the message list, with Stop aborting the request. Show errors as toasts and inline notices.
 - **Acceptance:** A reply streams from the real backend, and Stop keeps the partial text. Errors for busy, no model, and server down are clear.
 - **Testing:** Test the stream reader with events split across chunks. Try each error by hand.
 
@@ -233,7 +267,7 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Purpose:** Show, reopen, and delete saved conversations.
 - **Prerequisites:** P6-T11, and the conversation API (P5-T8, P5-T9).
 - **Packages:** `@tanstack/react-query`.
-- **Files:** `apps/web/src/app/`, `apps/web/src/features/conversations/`, `apps/web/src/features/chat/`, `apps/web/src/lib/`.
+- **Files:** `apps/web/app/`, `apps/web/components/`, `apps/web/components/`, `apps/web/lib/`.
 - **Instructions:** Add the query provider. Connect New chat, the list, opening a chat, its messages, and delete to the API. Refresh the data after a reply finishes. Don't copy server data into another store.
 - **Acceptance:** Conversations survive a reload and server restart. Follow-up replies use earlier messages. Delete asks for confirmation.
 - **Testing:** Tests cover the list, delete, and loading states. Restart the API by hand.
@@ -243,7 +277,7 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Purpose:** Let the user change theme and generation settings.
 - **Prerequisites:** P6-T12, and the readiness and settings API (P5-T10, P5-T13).
 - **Packages:** `zustand`, shadcn `dialog`.
-- **Files:** `apps/web/src/features/settings/`, `apps/web/src/stores/`, `apps/web/src/components/ui/`.
+- **Files:** `apps/web/components/`, `apps/web/stores/`, `packages/ui/src/`.
 - **Instructions:** Build a dialog for temperature, top-k, top-p, and max reply length, with a reset. Read defaults and limits from `GET /api/v1/ready`, and send the values with each message.
 - **Acceptance:** Settings survive a reload and reach the API. Out-of-range values can't be saved. Blocked storage doesn't break chat.
 - **Testing:** Tests cover limits, reset, and blocked storage. Check a real request in browser dev tools.
@@ -253,7 +287,7 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Purpose:** Work well on phones and desktops.
 - **Prerequisites:** P6-T13.
 - **Packages:** `motion`, only if CSS can't handle a needed transition.
-- **Files:** `apps/web/src/components/layout/`, `apps/web/src/components/chat/`.
+- **Files:** `packages/ui/src/`, `apps/web/components/`.
 - **Instructions:** Make the sidebar a slide-over panel on small screens, and keep the composer usable. Add subtle transitions under the DESIGN.md motion rules.
 - **Acceptance:** No sideways scrolling at 375px. Motion is removed under `prefers-reduced-motion`.
 - **Testing:** Check 375px, 768px, and 1280px in dev tools, with reduced motion both on and off.
@@ -263,7 +297,7 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Purpose:** Make every action usable by keyboard and screen reader.
 - **Prerequisites:** P6-T14.
 - **Packages:** None new.
-- **Files:** `apps/web/src/components/`, `apps/web/src/features/`.
+- **Files:** `apps/web/components/`, `apps/web/components/`.
 - **Instructions:** Review labels, focus order, dialog focus trapping, live regions, and contrast against DESIGN.md. Fix what fails.
 - **Acceptance:** A full chat, including settings and sidebar, works without a mouse.
 - **Testing:** Do a keyboard-only run, and run the browser's accessibility checker. Report anything not checked.
@@ -273,7 +307,7 @@ Run them one at a time. All tasks also run `pnpm --filter web lint`, `check-type
 - **Purpose:** Catch gaps before integration.
 - **Prerequisites:** P6-T15.
 - **Packages:** None new.
-- **Files:** Existing `apps/web/src/` files, plus their tests.
+- **Files:** Existing files in `apps/web/` and `packages/ui/`, plus their tests.
 - **Instructions:** Fill test gaps for critical behaviour, and make all loading, empty, and error states consistent. Remove unused components and packages.
 - **Acceptance:** All tests pass, and every package in `package.json` is used.
 - **Testing:** Run the full frontend checks, then walk through each state by hand.

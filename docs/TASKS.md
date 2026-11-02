@@ -50,10 +50,10 @@ P1-T1 and P1-T2 are done (see [PROGRESS.md](PROGRESS.md)). Commands run from the
 - **Objective:** Remove starter parts the plan does not use, but only items the owner approves one by one.
 - **Prerequisites:** P1-T3 gives a known baseline. The current state is committed, so every deletion can be recovered from git.
 - **Files:** Candidates, each needing its own yes:
-  - `apps/admin/` (the renamed starter docs app; the owner may keep it).
-  - `packages/ui/` (used only by the two apps).
+  - `apps/admin/`: **keep**. The owner decided on 2026-11-02 to keep it, with the same design system as `web`.
+  - `packages/ui/`: **keep**. It is now the shared design system.
   - `apps/web/README.md`, `apps/admin/README.md`, and `packages/eslint-config/README.md` (starter text).
-  - `apps/web/app/page.tsx`* and `apps/web/package.json`* (stop using `@repo/ui`).
+  - `packages/ui/src/code.tsx` and the unused starter images in each app's `public/` (nothing imports them any more).
   - `pnpm-lock.yaml`*.
   - The empty root `models/` folder. This is not `model/`.
   - **Must keep:** `packages/eslint-config/` and `packages/typescript-config/` (apart from their README), `apps/web/`, and the root `README.md`.
@@ -61,11 +61,11 @@ P1-T1 and P1-T2 are done (see [PROGRESS.md](PROGRESS.md)). Commands run from the
 - **Steps:**
   1. List the candidates and what uses them. `@repo/ui` is referenced by `apps/admin` and `apps/web`, each in `package.json` and `app/page.tsx`.
   2. Ask the owner for a yes or no on each item, and do nothing without a yes.
-  3. If `packages/ui` is removed, first stop importing it in `apps/web` (and `apps/admin` if kept), and remove the dependency from their `package.json`.
+  3. Check that nothing imports a file before deleting it (for example `grep -r "@repo/ui/code" apps packages --exclude-dir=node_modules`).
   4. Delete the approved items. The guard hook will ask before each deletion.
   5. Run `pnpm install` to refresh `pnpm-lock.yaml`.
   6. Run the Verify commands and compare with the P1-T3 results.
-- **Acceptance:** Only approved items were removed. If `packages/ui` is gone, `grep -r "@repo/ui" apps packages --exclude-dir=node_modules` finds nothing. Build, lint, and type-check pass as in P1-T3. `git status` shows only the approved deletions, the lockfile, and the `apps/web` edits.
+- **Acceptance:** Only approved items were removed, and nothing still imports a deleted file. Build, lint, and type-check pass as in P1-T3. `git status` shows only the approved deletions, the lockfile, and the `apps/web` edits.
 - **Verify:** `pnpm install`, `pnpm build`, `pnpm lint`, `pnpm check-types`, `git status --short`
 - **Learning:** How `workspace:*` dependencies link packages, and why you check what depends on something before deleting it.
 
@@ -364,3 +364,6 @@ This work was done before Phase 1 so the agent can follow the workflow in [AGENT
 | Two read-only subagents (`scope-reviewer`, `doc-auditor`) | `.claude/agents/` | Written and committed; not yet run |
 | Guard hook for risky commands | `.claude/hooks/brainx_guard.py`, `.claude/settings.json` | Script passed 103 sample commands alone; did not fire in the session that created it |
 | Student guide | [GUIDE.md](GUIDE.md) | Written |
+| Shared design system (`packages/ui`): tokens, 10 components, theme toggle, toasts | `packages/ui/src/` | Built early at the owner's request; types, lint, and build pass; screenshots checked; clicks not tested. See [FRONTEND.md](FRONTEND.md#ui-foundation-done-early-2026-11-02) |
+| Web chat preview and Admin pages (Overview, Design system) using that system | `apps/web/`, `apps/admin/` | Built; static, not connected to any model or API |
+| Turborepo helpers: `pnpm boundaries` check and the `turbo gen component` generator | `package.json`, `packages/ui/turbo/generators/` | Both ran successfully once; the generator's sample file was deleted |

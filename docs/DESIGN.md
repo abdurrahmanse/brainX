@@ -13,7 +13,7 @@ The interface is a premium chat tool that combines **Minimalism, Neo-Brutalism, 
 | `accent-fg` | `#FFFFFF` | `#000000` | Text on `accent` |
 | `error` | `#B00020` | `#FF6B6B` | Error messages |
 
-The theme defaults to the system setting, and the user can choose System, Light, or Dark.
+The theme defaults to the system setting, and the user can choose System, Light, or Dark. These values are implemented once, in `packages/ui/src/styles.css`, and both apps import that file.
 
 Contrast against each theme's background was calculated: every colour is at least 6.9:1 (light `accent` is 6.98:1, and the others are 7.0:1 or more). All exceed the 4.5:1 WCAG AA minimum for normal text. Code themes get checked in P6-T9.
 
