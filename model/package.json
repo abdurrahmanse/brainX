@@ -1,0 +1,7 @@
+{
+  "name": "@brainx/model",
+  "private": true,
+  "scripts": {
+    "test": "cd .. && uv run --package brainx-model pytest model/tests"
+  }
+}
