@@ -19,7 +19,7 @@ All other tasks in [TASKS.md](TASKS.md) have not started.
 
 - **Starter build not confirmed.** In a temporary copy of the repo, `build` and `check-types` failed with `next: command not found`. The cause is unknown, it may come from the copy, and it hasn't been run in the real repo. P1-T3 checks this.
 
-- **`apps/docs` was renamed to `apps/admin` outside the task list.** Its package is still named `docs`, the change is uncommitted, and `pnpm-lock.yaml` still says `apps/docs`, so a frozen install may fail. P1-T3 checks this.
+- **`apps/docs` was renamed to `apps/admin` outside the task list.** The rename is committed (`de03224`), and `pnpm-lock.yaml` lists `apps/admin`. Its package is still named `docs`. A frozen install has not been run in the real repo, so P1-T3 checks that it works.
 
 ## Decisions waiting for approval
 
