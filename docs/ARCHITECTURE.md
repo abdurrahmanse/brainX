@@ -19,7 +19,7 @@ flowchart LR
 ## Folders
 
 ```text
-apps/web/             Next.js chat UI (exists as a starter)
+apps/web/             Next.js chat UI (exists as a starter; see FRONTEND.md)
 apps/api/             FastAPI server (planned)
   main.py             routes and server startup
 model/                model code (planned)
@@ -54,12 +54,24 @@ turbo.json            Turborepo tasks (exists)
 
 ## API
 
-The server runs at `http://127.0.0.1:8000`. There is no database, so the browser keeps the conversation and sends it with each message.
+The server runs at `http://127.0.0.1:8000`. It stores nothing, so the browser keeps conversations and sends the current one with each message.
 
 ### `GET /health`
 
 ```json
-{ "status": "ok", "model_loaded": true }
+{
+  "status": "ok",
+  "model_loaded": true,
+  "generation": {
+    "defaults": { "temperature": 0.8, "top_k": 40, "top_p": 0.95, "max_new_tokens": 200 },
+    "limits": {
+      "temperature": [0.0, 2.0],
+      "top_k": [1, 200],
+      "top_p": [0.1, 1.0],
+      "max_new_tokens": [1, 300]
+    }
+  }
+}
 ```
 
 ### `POST /chat`
@@ -72,9 +84,12 @@ Request:
     { "role": "user", "content": "What is rain?" },
     { "role": "assistant", "content": "Rain is water from clouds." },
     { "role": "user", "content": "Why does it fall?" }
-  ]
+  ],
+  "generation": { "temperature": 0.8, "max_new_tokens": 200 }
 }
 ```
+
+`generation` is optional, and any missing field uses the default. Values outside the limits return `422`.
 
 The reply uses Server-Sent Events (SSE), which send small pieces of text as they are ready:
 
@@ -88,6 +103,8 @@ data: {"finish_reason":"stop"}
 event: error
 data: {"message":"Generation failed"}
 ```
+
+**Stopping a reply:** the browser aborts the request, and the server stops generating when it notices the disconnect. P5-T7 must prove this with the installed FastAPI version.
 
 Errors before streaming starts:
 
@@ -104,7 +121,7 @@ Errors before streaming starts:
 | Generate replies inside the API process | One server is simpler, and a separate one would add complexity with little benefit here |
 | One reply at a time | There is one user, so no queue is needed |
 | Browser calls FastAPI directly | Avoids a proxy that might buffer the stream |
-| Browser stores the conversation | Chat history was left out of the MVP, so no database is needed |
+| Browser stores conversations (recommendation) | Keeps the server simple and needs no database. P6-T12 asks for confirmation |
 | Python `.py` files in `model/` | Easier to read and learn from than a larger package structure |
 
 ## Tools and versions
@@ -118,7 +135,7 @@ Checked on 2026-11-02. "Tested" means it ran in a temporary test outside this re
 | Turborepo | 2.11.10 | In the repo |
 | Next.js / React | 16.3.8 / 19.2.8 | In the repo; build is unconfirmed, see P1-T3 |
 | TypeScript | 7.0.2 | In the repo; passed a build with Next.js 16.4.3 |
-| Tailwind CSS | 4.3.3 | Added in Phase 6 |
+| Tailwind CSS | 4.3.3 | Added in Phase 6; other frontend packages are in [FRONTEND.md](FRONTEND.md) |
 | Python / uv | 3.13.15 / 0.12.15 | Tested |
 | PyTorch | 2.15.0 | Tested; Apple GPU (MPS) available |
 | FastAPI / Uvicorn | 0.162.0 / 0.54.0 | Installed in a test; FastAPI includes SSE support |
@@ -131,6 +148,6 @@ Add a dependency only when a task needs it and the owner approves it.
 
 - The server listens only on `127.0.0.1`. There is no login, so it must not be exposed to a network.
 - CORS allows only `http://localhost:3000`.
-- Model output is shown as plain text, so it can't inject scripts into the page.
+- Model output is untrusted. Markdown rendering keeps raw HTML disabled, links aren't clickable, and P6-T8 and P6-T9 test this with script tags.
 - Checkpoints load with `torch.load(weights_only=True)`.
 - Data, checkpoints, and `.env` files stay out of git.

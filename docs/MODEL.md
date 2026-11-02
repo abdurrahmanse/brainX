@@ -129,7 +129,9 @@ Write about 30 fixed prompts before training: text generation, basic questions, 
 | Max new tokens | 200 |
 | Stop | `<\|end\|>` or `<\|eos\|>` |
 
-**Context:** 512 tokens minus 200 for the reply leaves 312 for the conversation. Older messages get dropped when it doesn't fit, so the model forgets them.
+The settings panel can change temperature, top-k, top-p, and max new tokens per message. Evaluation always uses the defaults, so scores stay comparable.
+
+**Context:** the reply length is reserved from the 512 tokens. The default of 200 leaves 312 for the conversation, and the maximum of 300 leaves 212. Older messages get dropped when they don't fit, so the model forgets them.
 
 ## Limits
 

@@ -17,7 +17,7 @@ It's an educational model, so it will not perform like ChatGPT or Claude, and it
 | Part | Technology |
 |---|---|
 | Monorepo | Turborepo |
-| Frontend | Next.js, React, TypeScript, Tailwind CSS |
+| Frontend | Next.js, React, TypeScript, Tailwind CSS, shadcn/ui |
 | Backend | Python, FastAPI |
 | Model | PyTorch |
 
@@ -28,6 +28,7 @@ It's an educational model, so it will not perform like ChatGPT or Claude, and it
 | [PROJECT.md](docs/PROJECT.md) | Goals, decisions, and MVP scope |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, folders, and API |
 | [MODEL.md](docs/MODEL.md) | Data, tokenizer, training, and evaluation plan |
+| [FRONTEND.md](docs/FRONTEND.md) | Frontend packages, structure, and tasks |
 | [DESIGN.md](docs/DESIGN.md) | UI rules |
 | [TASKS.md](docs/TASKS.md) | Phases and tasks |
 | [PROGRESS.md](docs/PROGRESS.md) | Current status |

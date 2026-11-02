@@ -65,27 +65,42 @@ Files marked with `*` are changed rather than created. Check the real repo befor
 | P5-T3 | Add `POST /chat` with a full reply | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | A test request gets a reply using a small test checkpoint |
 | P5-T4 | Stream the reply with SSE | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | Events arrive in the documented order |
 | P5-T5 | Add errors and the one-reply limit | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | 409, 422, and 503 are tested |
+| P5-T6 | Accept generation settings, and return defaults and limits | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | Values at and beyond each limit are tested |
+| P5-T7 | Stop generating when the client disconnects | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | A real server test shows generation stops and the model is free again |
+| P5-T8 | Allow the frontend through CORS | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | The allowed origin works, and others are refused |
 
 ## Phase 6: Frontend
 
-| ID | Task | Files | Done when |
-|---|---|---|---|
-| P6-T1 | Replace the starter page and add Tailwind | `apps/web/`* | Build passes with one styled element |
-| P6-T2 | Add design tokens | `apps/web/app/globals.css`* | Tokens match `docs/DESIGN.md` in light and dark |
-| P6-T3 | Build the page layout and empty state | `apps/web/app/page.tsx`*, `apps/web/components/` | Matches the layout in `docs/DESIGN.md` |
-| P6-T4 | Build the message list | `apps/web/components/` | Shows sample messages in every documented state |
-| P6-T5 | Build the message box and `SEND` | `apps/web/components/` | `Enter` and `Shift+Enter` behave as documented |
-| P6-T6 | Check small screens and keyboard use | `apps/web/`* | No sideways scrolling, and all controls work by keyboard |
+Full details for each task are in [FRONTEND.md](FRONTEND.md#tasks).
+
+| ID | Task | New packages |
+|---|---|---|
+| P6-T1 | Frontend environment setup | Vitest, Testing Library |
+| P6-T2 | Tailwind and design tokens | Tailwind |
+| P6-T3 | shadcn/ui configuration | shadcn, Radix, Lucide |
+| P6-T4 | Application shell | None |
+| P6-T5 | Sidebar and navigation | None |
+| P6-T6 | Chat message components | None |
+| P6-T7 | Prompt composer | None |
+| P6-T8 | Markdown rendering | react-markdown, remark-gfm |
+| P6-T9 | Code highlighting | Shiki |
+| P6-T10 | Theme management | next-themes |
+| P6-T11 | Streaming UI integration | Sonner |
+| P6-T12 | Conversation state (confirm storage first) | Zustand |
+| P6-T13 | Settings interface | None |
+| P6-T14 | Responsive design | Motion, if needed |
+| P6-T15 | Accessibility | None |
+| P6-T16 | UI testing and final polish | None |
 
 ## Phase 7: Integration
 
+Phase 6 connects the UI to the backend, and this phase proves the whole product works together.
+
 | ID | Task | Files | Done when |
 |---|---|---|---|
-| P7-T1 | Allow the frontend through CORS | `apps/api/main.py`*, `apps/api/tests/test_api.py`* | The allowed origin works, and others are refused |
-| P7-T2 | Write the API client and stream reader | `apps/web/lib/` | Tests or a manual check cover events split across chunks |
-| P7-T3 | Connect the chat with a live reply | `apps/web/`* | A reply streams from the real model in the browser |
-| P7-T4 | Send earlier messages as context | `apps/web/`* | A follow-up message includes earlier messages in its request |
-| P7-T5 | Show errors in the UI | `apps/web/`* | Busy, no model, and server-down errors each appear |
+| P7-T1 | Test the full chat with the real model | `docs/PROGRESS.md`* | Streaming, Stop, follow-ups, and reload all work and are recorded |
+| P7-T2 | Test every failure from the browser | `apps/web/`*, `apps/api/`* for approved fixes | Busy, no model, server down, and blocked storage each show the right message |
+| P7-T3 | Add essential Playwright tests | `apps/web/e2e/`, `apps/web/playwright.config.ts`, `apps/web/package.json`* | Send, stream, stop, and reload pass using a small test checkpoint |
 
 ## Phase 8: Final Testing
 
@@ -93,6 +108,6 @@ Files marked with `*` are changed rather than created. Check the real repo befor
 |---|---|---|---|
 | P8-T1 | Run all tests and fix found bugs | Files for each approved bug | Tests pass, and the bug list is resolved or recorded |
 | P8-T2 | Test offline | `docs/PROGRESS.md`* | Chat works with the internet off |
-| P8-T3 | Polish the UI | `apps/web/`* | Owner approves the look |
+| P8-T3 | Final UI review with the owner | `apps/web/`* | Owner approves the look |
 | P8-T4 | Finish the README | `README.md`* | A clean clone can follow it, and results are real |
 | P8-T5 | Prepare the portfolio demo | `README.md`*, `docs/` | Screenshots and a short demo script exist |

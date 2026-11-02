@@ -23,6 +23,8 @@ All other tasks in [TASKS.md](TASKS.md) have not started.
 
 - Removing `apps/docs`, `packages/ui`, and the starter READMEs (P1-T4).
 - Model size (P2-T1). Size M is only a recommendation.
+- Where conversation history is saved (P6-T12). Browser storage is only a recommendation.
+- Each frontend package, before it's installed (see `docs/FRONTEND.md`).
 
 ## Training results
 
