@@ -27,14 +27,17 @@ Each lower layer is fast and narrow. Higher layers are slower but prove that rea
 | Security checks | Dependency issues, insecure patterns, secrets, browser storage and cross-user access | `bandit`, `pip-audit`, review, browser/API tests | P5-T16, P5-T20, P7-T4 |
 | Release checks | HTTPS, health, live account flow, rollback instructions | Private browser window and deployed health check | P8-T6 |
 
-## GitHub Actions plan
+## GitHub Actions baseline
 
-There is **no workflow file yet**. P1-T7 creates `.github/workflows/ci.yml`; until then, GitHub does not automatically run any check.
+`.github/workflows/ci.yml` runs the current safe checks on every push and pull request. It uses an immutable action commit for checkout, pnpm, Node.js, and uv; each comment records the corresponding released action version. The jobs run on `ubuntu-24.04`, use a 10-minute limit, and have only read access to repository contents.
+
+The Node job uses Node.js `26.13.0`, pnpm `11.25.0`, and the committed `pnpm-lock.yaml`. The Python job uses uv `0.12.15`, Python `3.13`, and the committed `uv.lock`. Their caches contain package-manager dependency data keyed by those lockfiles; they do not cache `.venv`, `model/data`, `model/checkpoints`, or `model/outputs`.
+
+Creating the workflow does not claim that CI is green. A GitHub run becomes a result only after its real status and logs are recorded in [PROGRESS.md](PROGRESS.md).
 
 | Trigger | Required checks at that stage | Rules |
 |---|---|---|
-| Push or pull request | `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm check-types`, `pnpm build` | Must run from a clean checkout; cache dependencies only, never model data or checkpoints |
-| After P1-T6 | Python sync and model setup test | Uses lockfiles; no training and no dataset download in CI |
+| Push or pull request | `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm check-types`, `pnpm build`, `uv sync --all-packages --locked`, `uv run --package brainx-model pytest model/tests` | Must run from a clean checkout; cache dependencies only, never model data or checkpoints |
 | After Phase 5 | Backend tests against an isolated PostgreSQL service | Uses test credentials and a disposable database only |
 | After Phase 6 | Frontend component tests | Does not require production API secrets |
 | After Phase 7 | Playwright E2E with the tiny generated checkpoint | Never downloads or uses the real model/data |
